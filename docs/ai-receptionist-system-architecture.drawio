@@ -1,0 +1,723 @@
+<mxfile host="app.diagrams.net" modified="2025-01-15T12:00:00.000Z" agent="Mozilla/5.0" version="22.1.0" type="device">
+  <diagram name="System Architecture Overview" id="overview">
+    <mxGraphModel dx="3000" dy="2400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3400" pageHeight="2800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- ==================== TITLE ==================== -->
+        <mxCell id="title" value="AI RECEPTIONIST — SYSTEM ARCHITECTURE" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=32;fontStyle=1;fontColor=#1a1a1a;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="20" width="700" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Multi-Tenant Medical Appointment Scheduling System | Modular Monolith Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=14;fontStyle=2;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="65" width="700" height="25" as="geometry" />
+        </mxCell>
+        
+        <!-- ==================== HIGH LEVEL FLOW ==================== -->
+        <mxCell id="hl-box" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#e0e0e0;fillColor=#fafafa;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="100" width="3300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="hl-title" value="HIGH-LEVEL REQUEST FLOW" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="60" y="105" width="200" height="20" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="hl-1" value="1️⃣&#xa;Patient" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#333;fillColor=#fff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="130" width="70" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hl-2" value="2️⃣&#xa;Chat Widget" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#333;fillColor=#e3f2fd;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="250" y="130" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hl-3" value="3️⃣&#xa;API Gateway" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#333;fillColor=#fff3e0;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="410" y="130" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hl-4" value="4️⃣&#xa;Safety Gate" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#d32f2f;fillColor=#ffebee;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="570" y="130" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hl-5" value="5️⃣&#xa;Intent Router" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#333;fillColor=#e8f5e9;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="730" y="130" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hl-6" value="6️⃣&#xa;Session Mgr" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#333;fillColor=#f3e5f5;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="890" y="130" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hl-7" value="7️⃣&#xa;Scheduling&#xa;Engine" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#333;fillColor=#e0f7fa;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="130" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hl-8" value="8️⃣&#xa;MCP Tools" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1565c0;fillColor=#e3f2fd;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="130" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hl-9" value="9️⃣&#xa;EHR Adapter" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#333;fillColor=#fff8e1;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1370" y="130" width="80" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hl-10" value="🔟&#xa;DrChrono API" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#f57c00;fillColor=#fff3e0;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1530" y="130" width="85" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hl-11" value="1️⃣1️⃣&#xa;Response Gen" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#333;fillColor=#fce4ec;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1695" y="130" width="85" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hl-12" value="1️⃣2️⃣&#xa;Claude LLM" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#7b1fa2;fillColor=#f3e5f5;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1860" y="130" width="80" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Flow arrows -->
+        <mxCell id="hl-arr-1" value="" style="endArrow=classic;html=1;strokeColor=#666;" edge="1" parent="1" source="hl-1" target="hl-2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="hl-arr-2" value="" style="endArrow=classic;html=1;strokeColor=#666;" edge="1" parent="1" source="hl-2" target="hl-3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="hl-arr-3" value="" style="endArrow=classic;html=1;strokeColor=#666;" edge="1" parent="1" source="hl-3" target="hl-4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="hl-arr-4" value="" style="endArrow=classic;html=1;strokeColor=#666;" edge="1" parent="1" source="hl-4" target="hl-5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="hl-arr-5" value="" style="endArrow=classic;html=1;strokeColor=#666;" edge="1" parent="1" source="hl-5" target="hl-6"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="hl-arr-6" value="" style="endArrow=classic;html=1;strokeColor=#666;" edge="1" parent="1" source="hl-6" target="hl-7"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="hl-arr-7" value="" style="endArrow=classic;html=1;strokeColor=#666;" edge="1" parent="1" source="hl-7" target="hl-8"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="hl-arr-8" value="" style="endArrow=classic;html=1;strokeColor=#666;" edge="1" parent="1" source="hl-8" target="hl-9"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="hl-arr-9" value="" style="endArrow=classic;html=1;strokeColor=#666;" edge="1" parent="1" source="hl-9" target="hl-10"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="hl-arr-10" value="" style="endArrow=classic;html=1;strokeColor=#666;dashed=1;" edge="1" parent="1" source="hl-10" target="hl-11"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="hl-arr-11" value="" style="endArrow=classic;html=1;strokeColor=#666;" edge="1" parent="1" source="hl-11" target="hl-12"><mxGeometry relative="1" as="geometry" /></mxCell>
+        
+        <!-- ==================== MAIN SYSTEM BOX ==================== -->
+        <mxCell id="main-system" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1565c0;fillColor=#f8fbff;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="50" y="220" width="2550" height="1350" as="geometry" />
+        </mxCell>
+        <mxCell id="main-title" value="AI RECEPTIONIST SYSTEM" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=16;fontStyle=1;fontColor=#1565c0;" vertex="1" parent="1">
+          <mxGeometry x="70" y="230" width="300" height="25" as="geometry" />
+        </mxCell>
+        
+        <!-- ==================== API LAYER ==================== -->
+        <mxCell id="api-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#ff9800;fillColor=#fff8e1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="270" width="350" height="580" as="geometry" />
+        </mxCell>
+        <mxCell id="api-title" value="API LAYER" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;fontColor=#e65100;" vertex="1" parent="1">
+          <mxGeometry x="80" y="275" width="350" height="25" as="geometry" />
+        </mxCell>
+        
+        <!-- Request Handler -->
+        <mxCell id="req-handler" value="REQUEST HANDLER" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#e65100;fillColor=#ffffff;fontSize=11;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="100" y="310" width="310" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="req-handler-content" value="Endpoints:&#xa;─────────────────────────────────&#xa;POST /api/v1/chat          → Main chat&#xa;POST /api/v1/chat/stream   → SSE stream&#xa;GET  /api/v1/session/{id}  → Get session&#xa;DELETE /api/v1/session/{id}→ End session&#xa;POST /api/v1/feedback      → User feedback&#xa;GET  /api/v1/health        → Health check&#xa;&#xa;Responsibilities:&#xa;• Parse &amp; validate JSON body&#xa;• Extract clinic_id from API key&#xa;• Generate unique request_id (UUID v4)&#xa;• Apply rate limiting rules" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=8;fontFamily=Courier New;spacingLeft=5;spacingTop=0;" vertex="1" parent="1">
+          <mxGeometry x="105" y="330" width="300" height="135" as="geometry" />
+        </mxCell>
+        
+        <!-- Auth Middleware -->
+        <mxCell id="auth-mid" value="AUTHENTICATION MIDDLEWARE" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#e65100;fillColor=#ffffff;fontSize=11;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="100" y="485" width="310" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="auth-content" value="Authentication Flow:&#xa;─────────────────────────────────&#xa;1. Extract API key from header&#xa;   X-API-Key: sk_live_xxxxx&#xa;&#xa;2. Hash &amp; lookup in database&#xa;   SELECT * FROM api_keys WHERE hash = ?&#xa;&#xa;3. Load clinic configuration&#xa;   • Clinic name, settings&#xa;   • EHR connection type&#xa;   • Feature flags&#xa;&#xa;4. Inject clinic context into request" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=8;fontFamily=Courier New;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="105" y="505" width="300" height="105" as="geometry" />
+        </mxCell>
+        
+        <!-- Rate Limiter -->
+        <mxCell id="rate-limiter" value="RATE LIMITER" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#e65100;fillColor=#ffffff;fontSize=11;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="100" y="630" width="310" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="rate-content" value="Strategy: Token Bucket (per clinic)&#xa;─────────────────────────────────&#xa;• Capacity: 100 requests&#xa;• Refill: 10 requests/second&#xa;• Storage: Redis&#xa;  Key: ratelimit:{clinic_id}:bucket&#xa;&#xa;On limit exceeded → HTTP 429 + Retry-After" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=8;fontFamily=Courier New;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="105" y="650" width="300" height="75" as="geometry" />
+        </mxCell>
+        
+        <!-- Request DTO -->
+        <mxCell id="req-dto" value="ChatRequest DTO" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#e65100;fillColor=#fff3e0;fontSize=9;fontStyle=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="100" y="745" width="145" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="req-dto-content" value="{&#xa;  message: string&#xa;  session_id?: string&#xa;  clinic_id: string&#xa;  metadata?: object&#xa;}" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=8;fontFamily=Courier New;spacingLeft=3;" vertex="1" parent="1">
+          <mxGeometry x="103" y="763" width="140" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Response DTO -->
+        <mxCell id="res-dto" value="ChatResponse DTO" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#e65100;fillColor=#fff3e0;fontSize=9;fontStyle=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="260" y="745" width="150" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="res-dto-content" value="{&#xa;  response: string&#xa;  session_id: string&#xa;  intent: string&#xa;  action?: object&#xa;}" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=8;fontFamily=Courier New;spacingLeft=3;" vertex="1" parent="1">
+          <mxGeometry x="263" y="763" width="145" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- ==================== SAFETY LAYER ==================== -->
+        <mxCell id="safety-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#d32f2f;fillColor=#ffebee;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="450" y="270" width="380" height="580" as="geometry" />
+        </mxCell>
+        <mxCell id="safety-title" value="SAFETY LAYER (Critical Path)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;fontColor=#c62828;" vertex="1" parent="1">
+          <mxGeometry x="450" y="275" width="380" height="25" as="geometry" />
+        </mxCell>
+        
+        <!-- PHI Redaction -->
+        <mxCell id="phi-redact" value="PHI REDACTION ENGINE" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#c62828;fillColor=#ffffff;fontSize=11;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="470" y="310" width="340" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="phi-content" value="Library: Microsoft Presidio&#xa;─────────────────────────────────────&#xa;Entities Detected &amp; Redacted:&#xa;&#xa;• PERSON      → &quot;John Smith&quot; → [PERSON]&#xa;• PHONE       → &quot;555-1234&quot;   → [PHONE]&#xa;• SSN         → &quot;123-45-6789&quot;→ [SSN]&#xa;• EMAIL       → &quot;a@b.com&quot;    → [EMAIL]&#xa;• DATE_TIME   → &quot;Jan 15&quot;     → [DATE]&#xa;• MEDICAL_ID  → &quot;MRN123&quot;     → [MRN]&#xa;• CREDIT_CARD → &quot;4111...&quot;    → [CC]&#xa;&#xa;Applied BEFORE: Logging, Analytics, Errors" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=8;fontFamily=Courier New;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="475" y="330" width="330" height="125" as="geometry" />
+        </mxCell>
+        
+        <!-- Safety Gate -->
+        <mxCell id="safety-gate" value="SAFETY GATE (4-Layer Detection)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#c62828;fillColor=#ffffff;fontSize=11;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="470" y="475" width="340" height="280" as="geometry" />
+        </mxCell>
+        
+        <!-- Layer 1 -->
+        <mxCell id="layer1" value="LAYER 1: KEYWORD MATCH (~1ms)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#ef5350;fillColor=#ffcdd2;fontSize=9;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="480" y="500" width="155" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="layer1-c" value="• Exact word lookup&#xa;• HashSet O(1)&#xa;• &quot;suicide&quot;, &quot;kill&quot;, &quot;911&quot;" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="483" y="518" width="150" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Layer 2 -->
+        <mxCell id="layer2" value="LAYER 2: REGEX PATTERNS (~2ms)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#ef5350;fillColor=#ffcdd2;fontSize=9;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="645" y="500" width="155" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="layer2-c" value="• Compiled patterns&#xa;• /kill\s*(my)?self/&#xa;• /can'?t\s*breathe/" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="648" y="518" width="150" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Layer 3 -->
+        <mxCell id="layer3" value="LAYER 3: SEMANTIC (~25ms)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#ef5350;fillColor=#ffcdd2;fontSize=9;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="480" y="580" width="155" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="layer3-c" value="• Sentence-BERT embed&#xa;• Cosine similarity&#xa;• vs. crisis phrases&#xa;• Threshold: 0.85" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="483" y="598" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Layer 4 -->
+        <mxCell id="layer4" value="LAYER 4: PII SCAN (~5ms)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#ef5350;fillColor=#ffcdd2;fontSize=9;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="645" y="580" width="155" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="layer4-c" value="• SSN pattern&#xa;• Credit card (Luhn)&#xa;• Block &amp; warn user&#xa;• Request secure ch." style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="648" y="598" width="150" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Safety Result -->
+        <mxCell id="safety-result" value="SafetyResult" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#c62828;fillColor=#ffcdd2;fontSize=9;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="480" y="670" width="150" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="safety-result-c" value="{&#xa;  is_safe: boolean&#xa;  triggered_layer?: int&#xa;  matched_pattern?: str&#xa;  action: enum&#xa;}" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="483" y="685" width="145" height="58" as="geometry" />
+        </mxCell>
+        
+        <!-- Emergency Handler -->
+        <mxCell id="emergency" value="EMERGENCY HANDLER" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#c62828;fillColor=#ffffff;fontSize=10;fontStyle=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="645" y="670" width="155" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="emergency-c" value="• Return crisis resources&#xa;• Notify clinic staff&#xa;• Log incident (redacted)&#xa;• Skip normal flow" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="648" y="688" width="150" height="55" as="geometry" />
+        </mxCell>
+        
+        <!-- Safety flow -->
+        <mxCell id="safety-flow" value="is_safe=false" style="endArrow=classic;html=1;strokeColor=#c62828;dashed=1;fontSize=8;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="safety-result" target="emergency">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- PHI Applied Note -->
+        <mxCell id="phi-note" value="⚠️ PHI redaction applied to ALL&#xa;downstream logging &amp; analytics" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#c62828;fillColor=#ffcdd2;fontSize=8;fontStyle=2;align=center;" vertex="1" parent="1">
+          <mxGeometry x="470" y="760" width="340" height="35" as="geometry" />
+        </mxCell>
+        
+        <!-- ==================== INTELLIGENCE LAYER ==================== -->
+        <mxCell id="intel-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#2e7d32;fillColor=#e8f5e9;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="850" y="270" width="420" height="580" as="geometry" />
+        </mxCell>
+        <mxCell id="intel-title" value="INTELLIGENCE LAYER" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;fontColor=#1b5e20;" vertex="1" parent="1">
+          <mxGeometry x="850" y="275" width="420" height="25" as="geometry" />
+        </mxCell>
+        
+        <!-- Intent Router -->
+        <mxCell id="intent-router" value="INTENT ROUTER (Tiered Classification)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#2e7d32;fillColor=#ffffff;fontSize=11;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="870" y="310" width="380" height="260" as="geometry" />
+        </mxCell>
+        
+        <!-- Tier 1 -->
+        <mxCell id="tier1" value="TIER 1: KEYWORD (~0ms) [40% of traffic]" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#4caf50;fillColor=#c8e6c9;fontSize=9;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="880" y="338" width="175" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="tier1-c" value="• Regex patterns&#xa;• &quot;book.*appointment&quot;&#xa;• &quot;cancel.*visit&quot;&#xa;• Cost: FREE" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="883" y="356" width="170" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Tier 2 -->
+        <mxCell id="tier2" value="TIER 2: HAIKU (~50ms) [55% of traffic]" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#4caf50;fillColor=#c8e6c9;fontSize=9;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="1065" y="338" width="175" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="tier2-c" value="• Claude 3 Haiku&#xa;• Fast &amp; cheap&#xa;• $0.25/1M tokens&#xa;• Most common path" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="1068" y="356" width="170" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Tier 3 -->
+        <mxCell id="tier3" value="TIER 3: SONNET (~300ms) [5% fallback]" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#4caf50;fillColor=#c8e6c9;fontSize=9;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="880" y="418" width="175" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="tier3-c" value="• Claude Sonnet&#xa;• Complex/ambiguous&#xa;• High accuracy&#xa;• Last resort" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="883" y="436" width="170" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Intents -->
+        <mxCell id="intents-box" value="Detected Intents" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#2e7d32;fillColor=#c8e6c9;fontSize=9;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="1065" y="418" width="175" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="intents-c" value="SCHEDULING   → Book apt&#xa;CANCELLATION → Cancel apt&#xa;RESCHEDULE   → Change apt&#xa;INFORMATION  → FAQ/hours&#xa;GREETING     → Hello/hi&#xa;EMERGENCY    → Crisis&#xa;HANDOFF      → Human req&#xa;UNKNOWN      → Fallback" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="1068" y="436" width="170" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- Session Manager -->
+        <mxCell id="session-mgr" value="SESSION MANAGER" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#2e7d32;fillColor=#ffffff;fontSize=11;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="870" y="585" width="380" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="session-content" value="Session Storage: Redis&#xa;─────────────────────────────────────────────&#xa;Key Pattern: session:{clinic_id}:{session_id}&#xa;TTL: 30 minutes (sliding expiration)&#xa;&#xa;Session Data Structure:&#xa;┌─────────────────────────────────────────────┐&#xa;│ session_id: UUID (server-generated)         │&#xa;│ clinic_id: string                           │&#xa;│ state: BookingState enum                    │&#xa;│ collected_data: {                           │&#xa;│   provider?, date?, time?, patient_info?    │&#xa;│ }                                           │&#xa;│ intent_history: [Intent, Intent, ...]       │&#xa;│ created_at: timestamp                       │&#xa;│ updated_at: timestamp                       │&#xa;└─────────────────────────────────────────────┘&#xa;&#xa;Features: Distributed locking, Idempotency check" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=7;fontFamily=Courier New;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="875" y="605" width="370" height="145" as="geometry" />
+        </mxCell>
+        
+        <!-- Context Builder -->
+        <mxCell id="context-builder" value="CONTEXT BUILDER" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#2e7d32;fillColor=#ffffff;fontSize=10;fontStyle=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="870" y="770" width="185" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="context-c" value="• Merge session + message&#xa;• Add clinic context&#xa;• Include conversation history&#xa;• Build LLM prompt" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="873" y="788" width="180" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Slot Extractor -->
+        <mxCell id="slot-extract" value="SLOT EXTRACTOR (NLU)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#2e7d32;fillColor=#ffffff;fontSize=10;fontStyle=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="1065" y="770" width="185" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="slot-c" value="Extracts from user message:&#xa;• Doctor name&#xa;• Date/time preferences&#xa;• Patient information" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="1068" y="788" width="180" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- ==================== SCHEDULING ENGINE ==================== -->
+        <mxCell id="sched-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0277bd;fillColor=#e1f5fe;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1290" y="270" width="500" height="580" as="geometry" />
+        </mxCell>
+        <mxCell id="sched-title" value="SCHEDULING ENGINE" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;fontColor=#01579b;" vertex="1" parent="1">
+          <mxGeometry x="1290" y="275" width="500" height="25" as="geometry" />
+        </mxCell>
+        
+        <!-- State Machine -->
+        <mxCell id="fsm" value="BOOKING STATE MACHINE (FSM)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0277bd;fillColor=#ffffff;fontSize=11;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="310" width="240" height="420" as="geometry" />
+        </mxCell>
+        
+        <!-- States -->
+        <mxCell id="s-idle" value="IDLE" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#0277bd;fillColor=#b3e5fc;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1375" y="340" width="70" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="s-doctor" value="COLLECT_DOCTOR" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0277bd;fillColor=#e1f5fe;fontSize=8;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1355" y="395" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="s-date" value="COLLECT_DATE" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0277bd;fillColor=#e1f5fe;fontSize=8;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1355" y="445" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="s-time" value="COLLECT_TIME" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0277bd;fillColor=#e1f5fe;fontSize=8;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1355" y="495" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="s-patient" value="COLLECT_PATIENT" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0277bd;fillColor=#e1f5fe;fontSize=8;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1355" y="545" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="s-confirm" value="CONFIRM_BOOKING" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0277bd;fillColor=#e1f5fe;fontSize=8;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1355" y="595" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="s-done" value="COMPLETED" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#2e7d32;fillColor=#c8e6c9;fontSize=8;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1325" y="650" width="70" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="s-fail" value="FAILED" style="ellipse;whiteSpace=wrap;html=1;strokeColor=#c62828;fillColor=#ffcdd2;fontSize=8;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1420" y="650" width="60" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- State arrows -->
+        <mxCell id="sa1" value="" style="endArrow=classic;html=1;strokeColor=#0277bd;fontSize=7;entryX=0.5;entryY=0;exitX=0.5;exitY=1;" edge="1" parent="1" source="s-idle" target="s-doctor"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="sa2" value="" style="endArrow=classic;html=1;strokeColor=#0277bd;fontSize=7;entryX=0.5;entryY=0;exitX=0.5;exitY=1;" edge="1" parent="1" source="s-doctor" target="s-date"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="sa3" value="" style="endArrow=classic;html=1;strokeColor=#0277bd;fontSize=7;entryX=0.5;entryY=0;exitX=0.5;exitY=1;" edge="1" parent="1" source="s-date" target="s-time"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="sa4" value="" style="endArrow=classic;html=1;strokeColor=#0277bd;fontSize=7;entryX=0.5;entryY=0;exitX=0.5;exitY=1;" edge="1" parent="1" source="s-time" target="s-patient"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="sa5" value="" style="endArrow=classic;html=1;strokeColor=#0277bd;fontSize=7;entryX=0.5;entryY=0;exitX=0.5;exitY=1;" edge="1" parent="1" source="s-patient" target="s-confirm"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="sa6" value="yes" style="endArrow=classic;html=1;strokeColor=#2e7d32;fontSize=7;entryX=0.5;entryY=0;exitX=0.25;exitY=1;" edge="1" parent="1" source="s-confirm" target="s-done"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="sa7" value="no" style="endArrow=classic;html=1;strokeColor=#c62828;fontSize=7;dashed=1;entryX=0.5;entryY=0;exitX=0.75;exitY=1;" edge="1" parent="1" source="s-confirm" target="s-fail"><mxGeometry relative="1" as="geometry" /></mxCell>
+        
+        <!-- State labels -->
+        <mxCell id="sl1" value="scheduling intent" style="text;html=1;strokeColor=none;fillColor=none;fontSize=7;fontColor=#666;" vertex="1" parent="1">
+          <mxGeometry x="1445" y="355" width="80" height="15" as="geometry" />
+        </mxCell>
+        
+        <!-- Transition Actions -->
+        <mxCell id="trans-actions" value="STATE TRANSITION ACTIONS" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0277bd;fillColor=#ffffff;fontSize=10;fontStyle=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="740" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="trans-c" value="On COLLECT_DOCTOR:&#xa;  → call list_providers()&#xa;On COLLECT_DATE:&#xa;  → validate date, prompt&#xa;On COLLECT_TIME:&#xa;  → call get_available_slots()&#xa;On CONFIRM:&#xa;  → call book_appointment()" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=3;" vertex="1" parent="1">
+          <mxGeometry x="1313" y="758" width="235" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- MCP Tools -->
+        <mxCell id="mcp-tools" value="MCP TOOL LAYER" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1565c0;fillColor=#ffffff;fontSize=11;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="1565" y="310" width="210" height="260" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="cal-tools" value="Calendar Tools" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1565c0;fillColor=#e3f2fd;fontSize=9;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="1575" y="338" width="95" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="cal-c" value="list_providers()&#xa;list_offices()&#xa;get_slots()&#xa;book_apt()&#xa;cancel_apt()&#xa;reschedule()" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="1578" y="355" width="90" height="75" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="pat-tools" value="Patient Tools" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1565c0;fillColor=#e3f2fd;fontSize=9;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="1680" y="338" width="85" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="pat-c" value="search()&#xa;create()&#xa;get()&#xa;update()" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="1683" y="355" width="80" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="tool-schema" value="Tool Schema (MCP Protocol)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1565c0;fillColor=#bbdefb;fontSize=8;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="1575" y="458" width="190" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="schema-c" value="{&#xa;  name: &quot;book_appointment&quot;,&#xa;  description: &quot;...&quot;,&#xa;  inputSchema: {&#xa;    provider_id: string,&#xa;    date: string (ISO),&#xa;    time: string,&#xa;    patient: {...}&#xa;  }&#xa;}" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="1578" y="473" width="185" height="83" as="geometry" />
+        </mxCell>
+        
+        <!-- Adapter Layer -->
+        <mxCell id="adapter-layer" value="EHR ADAPTER LAYER" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#f57c00;fillColor=#fff3e0;fontSize=11;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="1565" y="585" width="210" height="255" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="adapter-iface" value="«interface»&#xa;CalendarAdapter" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#f57c00;fillColor=#ffe0b2;fontSize=8;fontStyle=3;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="1575" y="615" width="190" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="iface-c" value="+ list_providers()&#xa;+ get_available_slots()&#xa;+ book_appointment()&#xa;+ search_patient()" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="1578" y="640" width="185" height="43" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="drchrono-impl" value="DrChronoAdapter" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#e65100;fillColor=#ffffff;fontSize=8;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="1575" y="695" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dr-c" value="OAuth 2.0&#xa;REST API&#xa;Full features" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=6;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="1578" y="712" width="85" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="google-impl" value="GoogleCalAdapter" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#e65100;fillColor=#ffffff;fontSize=8;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="1675" y="695" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="gc-c" value="OAuth 2.0&#xa;Calendar API&#xa;Basic only" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=6;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="1678" y="712" width="85" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="adapter-factory" value="AdapterFactory.get(clinic.ehr_type)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#f57c00;fillColor=#ffe0b2;fontSize=7;fontStyle=2;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1575" y="765" width="190" height="25" as="geometry" />
+        </mxCell>
+        
+        <!-- Implements arrows -->
+        <mxCell id="impl1" value="" style="endArrow=block;endFill=0;html=1;strokeColor=#666;dashed=1;exitX=0.5;exitY=0;entryX=0.25;entryY=1;" edge="1" parent="1" source="drchrono-impl" target="adapter-iface"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="impl2" value="" style="endArrow=block;endFill=0;html=1;strokeColor=#666;dashed=1;exitX=0.5;exitY=0;entryX=0.75;entryY=1;" edge="1" parent="1" source="google-impl" target="adapter-iface"><mxGeometry relative="1" as="geometry" /></mxCell>
+        
+        <!-- ==================== RESPONSE LAYER ==================== -->
+        <mxCell id="resp-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#7b1fa2;fillColor=#f3e5f5;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1810" y="270" width="270" height="330" as="geometry" />
+        </mxCell>
+        <mxCell id="resp-title" value="RESPONSE LAYER" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;fontColor=#6a1b9a;" vertex="1" parent="1">
+          <mxGeometry x="1810" y="275" width="270" height="25" as="geometry" />
+        </mxCell>
+        
+        <!-- Response Generator -->
+        <mxCell id="resp-gen" value="RESPONSE GENERATOR" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#7b1fa2;fillColor=#ffffff;fontSize=11;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="1825" y="310" width="240" height="145" as="geometry" />
+        </mxCell>
+        <mxCell id="resp-gen-c" value="Input:&#xa;• Current state &amp; collected data&#xa;• Tool execution results&#xa;• Conversation history&#xa;• Clinic branding config&#xa;&#xa;Process:&#xa;1. Build prompt with context&#xa;2. Call Claude Sonnet API&#xa;3. Parse response&#xa;4. Apply clinic tone/branding&#xa;&#xa;Output:&#xa;• Natural language response&#xa;• Suggested follow-up actions" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=3;" vertex="1" parent="1">
+          <mxGeometry x="1828" y="328" width="235" height="125" as="geometry" />
+        </mxCell>
+        
+        <!-- Handoff Handler -->
+        <mxCell id="handoff" value="HANDOFF HANDLER" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#7b1fa2;fillColor=#ffffff;fontSize=10;fontStyle=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="1825" y="470" width="115" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="handoff-c" value="Triggers:&#xa;• User requests human&#xa;• 3+ failed attempts&#xa;• Complex medical Q&#xa;&#xa;→ Create support ticket&#xa;→ Notify staff" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=6;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="1828" y="488" width="110" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Notification Service -->
+        <mxCell id="notif" value="NOTIFICATION SVC" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#7b1fa2;fillColor=#ffffff;fontSize=10;fontStyle=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="1950" y="470" width="115" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="notif-c" value="• SMS confirmation&#xa;• Email receipt&#xa;• Staff alerts&#xa;• Reminder scheduling" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=6;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="1953" y="488" width="110" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- ==================== DATA LAYER ==================== -->
+        <mxCell id="data-layer" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#ede7f6;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="870" width="1200" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="data-title" value="DATA LAYER" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontStyle=1;fontColor=#4527a0;" vertex="1" parent="1">
+          <mxGeometry x="100" y="878" width="150" height="25" as="geometry" />
+        </mxCell>
+        
+        <!-- PostgreSQL -->
+        <mxCell id="postgres" value="POSTGRESQL (Primary Database)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#ffffff;fontSize=11;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="100" y="910" width="400" height="260" as="geometry" />
+        </mxCell>
+        
+        <!-- Tables -->
+        <mxCell id="tbl-clinics" value="clinics" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#d1c4e9;fontSize=8;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="115" y="940" width="115" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl-clinics-c" value="id, name, ehr_type&#xa;settings (JSONB)&#xa;branding (JSONB)&#xa;created_at" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=6;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="118" y="955" width="110" height="53" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="tbl-api-keys" value="api_keys" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#d1c4e9;fontSize=8;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="240" y="940" width="115" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl-api-c" value="id, clinic_id&#xa;key_hash (SHA256)&#xa;permissions&#xa;expires_at" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=6;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="243" y="955" width="110" height="53" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="tbl-oauth" value="oauth_tokens" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#d1c4e9;fontSize=8;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="365" y="940" width="120" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl-oauth-c" value="clinic_id, provider&#xa;access_token (ENC)&#xa;refresh_token (ENC)&#xa;expires_at" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=6;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="368" y="955" width="115" height="53" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="tbl-convos" value="conversations" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#d1c4e9;fontSize=8;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="115" y="1020" width="115" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl-convos-c" value="id, clinic_id&#xa;session_id&#xa;status, outcome&#xa;started_at, ended_at" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=6;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="118" y="1035" width="110" height="53" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="tbl-msgs" value="messages" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#d1c4e9;fontSize=8;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="240" y="1020" width="115" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl-msgs-c" value="id, conversation_id&#xa;role (user/assistant)&#xa;content (REDACTED)&#xa;intent, timestamp" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=6;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="243" y="1035" width="110" height="53" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="tbl-audit" value="audit_log" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#d1c4e9;fontSize=8;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="365" y="1020" width="120" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl-audit-c" value="id, clinic_id&#xa;action, resource&#xa;actor, ip_address&#xa;details, timestamp" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=6;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="368" y="1035" width="115" height="53" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="tbl-kb" value="knowledge_base" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#d1c4e9;fontSize=8;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="115" y="1100" width="240" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="tbl-kb-c" value="id, clinic_id, content, embedding (vector), category" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=6;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="118" y="1115" width="235" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="pgvector" value="+ pgvector extension for embeddings" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontStyle=2;fontColor=#5e35b1;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="118" y="1135" width="235" height="15" as="geometry" />
+        </mxCell>
+        
+        <!-- Redis -->
+        <mxCell id="redis" value="REDIS (Cache &amp; Sessions)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#ffffff;fontSize=11;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="520" y="910" width="300" height="250" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="redis-session" value="Sessions" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#d1c4e9;fontSize=8;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="535" y="940" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="redis-session-c" value="session:{clinic}:{id}&#xa;TTL: 30 minutes&#xa;Value: SessionData JSON" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=6;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="538" y="955" width="125" height="43" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="redis-rate" value="Rate Limiting" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#d1c4e9;fontSize=8;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="675" y="940" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="redis-rate-c" value="ratelimit:{clinic}:bucket&#xa;TTL: 1 minute&#xa;Value: token count" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=6;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="678" y="955" width="125" height="43" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="redis-lock" value="Distributed Locks" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#d1c4e9;fontSize=8;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="535" y="1010" width="130" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="redis-lock-c" value="lock:booking:{session}&#xa;TTL: 30 seconds&#xa;Prevents double-book" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=6;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="538" y="1025" width="125" height="38" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="redis-cache" value="Cache" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#d1c4e9;fontSize=8;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="675" y="1010" width="130" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="redis-cache-c" value="cache:providers:{clinic}&#xa;TTL: 5 minutes&#xa;Reduces API calls" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=6;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="678" y="1025" width="125" height="38" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="redis-dedup" value="Idempotency" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#d1c4e9;fontSize=8;fontStyle=1;verticalAlign=top;spacingTop=2;" vertex="1" parent="1">
+          <mxGeometry x="535" y="1075" width="270" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="redis-dedup-c" value="dedup:{request_id} → TTL: 5 min → Prevents duplicate processing" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=6;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="538" y="1090" width="265" height="25" as="geometry" />
+        </mxCell>
+        
+        <!-- Encryption -->
+        <mxCell id="encryption" value="ENCRYPTION" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#ffffff;fontSize=10;fontStyle=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="840" y="910" width="200" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="enc-content" value="At Rest:&#xa;• OAuth tokens: AES-256-GCM&#xa;• Per-clinic encryption keys&#xa;• Key rotation support&#xa;&#xa;In Transit:&#xa;• TLS 1.3 everywhere&#xa;• Certificate pinning (mobile)" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=3;" vertex="1" parent="1">
+          <mxGeometry x="843" y="928" width="195" height="90" as="geometry" />
+        </mxCell>
+        
+        <!-- Data Isolation -->
+        <mxCell id="isolation" value="MULTI-TENANT ISOLATION" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#ffffff;fontSize=10;fontStyle=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="840" y="1035" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="iso-content" value="Strategy: Row-Level Security&#xa;&#xa;• All tables have clinic_id&#xa;• RLS policies enforced&#xa;• No cross-clinic data access&#xa;• Audit all queries" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=3;" vertex="1" parent="1">
+          <mxGeometry x="843" y="1053" width="195" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Secrets -->
+        <mxCell id="secrets" value="SECRETS MANAGEMENT" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#ffffff;fontSize=10;fontStyle=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="910" width="200" height="215" as="geometry" />
+        </mxCell>
+        <mxCell id="secrets-content" value="Environment Variables:&#xa;─────────────────────────&#xa;ANTHROPIC_API_KEY&#xa;JWT_SECRET&#xa;ENCRYPTION_KEY&#xa;DATABASE_URL&#xa;REDIS_URL&#xa;DRCHRONO_CLIENT_ID&#xa;DRCHRONO_CLIENT_SECRET&#xa;GOOGLE_CLIENT_ID&#xa;GOOGLE_CLIENT_SECRET&#xa;TWILIO_AUTH_TOKEN&#xa;SENDGRID_API_KEY&#xa;SENTRY_DSN&#xa;─────────────────────────&#xa;Never in code, .env only&#xa;Rotate quarterly" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=3;" vertex="1" parent="1">
+          <mxGeometry x="1063" y="928" width="195" height="195" as="geometry" />
+        </mxCell>
+        
+        <!-- ==================== EXTERNAL SERVICES ==================== -->
+        <mxCell id="ext-box" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#f57c00;fillColor=#fff3e0;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="2100" y="270" width="480" height="920" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-title" value="EXTERNAL SERVICES" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;fontColor=#e65100;" vertex="1" parent="1">
+          <mxGeometry x="2100" y="275" width="480" height="25" as="geometry" />
+        </mxCell>
+        
+        <!-- Claude API -->
+        <mxCell id="claude" value="ANTHROPIC CLAUDE API" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#7b1fa2;fillColor=#ffffff;fontSize=11;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="2120" y="310" width="220" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="claude-c" value="Models Used:&#xa;─────────────────────────────&#xa;claude-3-haiku-20240307&#xa;  • Intent classification&#xa;  • Slot extraction&#xa;  • Latency: ~50ms&#xa;  • Cost: $0.25/1M input&#xa;&#xa;claude-sonnet-4-20250514&#xa;  • Response generation&#xa;  • Complex reasoning&#xa;  • Latency: ~300ms&#xa;  • Cost: $3/1M input&#xa;&#xa;Integration:&#xa;  • Async HTTP client&#xa;  • Retry with backoff&#xa;  • Token usage tracking" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=3;" vertex="1" parent="1">
+          <mxGeometry x="2123" y="328" width="215" height="180" as="geometry" />
+        </mxCell>
+        
+        <!-- DrChrono -->
+        <mxCell id="drchrono-api" value="DRCHRONO EHR API" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#e65100;fillColor=#ffffff;fontSize=11;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="2120" y="525" width="220" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="drchrono-c" value="Endpoints Used:&#xa;─────────────────────────────&#xa;GET  /api/doctors&#xa;GET  /api/offices  &#xa;GET  /api/appointments&#xa;POST /api/appointments&#xa;GET  /api/patients&#xa;POST /api/patients&#xa;&#xa;Auth: OAuth 2.0&#xa;  • Authorization Code flow&#xa;  • Token refresh handling&#xa;&#xa;Rate Limit: 100 req/min&#xa;Latency: ~200ms avg" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=3;" vertex="1" parent="1">
+          <mxGeometry x="2123" y="543" width="215" height="170" as="geometry" />
+        </mxCell>
+        
+        <!-- Google Calendar -->
+        <mxCell id="google-api" value="GOOGLE CALENDAR API" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#4285f4;fillColor=#ffffff;fontSize=11;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="2120" y="730" width="220" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="google-c" value="Endpoints:&#xa;─────────────────────────────&#xa;GET  /calendars/{id}/events&#xa;POST /calendars/{id}/events&#xa;GET  /freeBusy&#xa;&#xa;Auth: OAuth 2.0&#xa;Latency: ~150ms" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=3;" vertex="1" parent="1">
+          <mxGeometry x="2123" y="748" width="215" height="110" as="geometry" />
+        </mxCell>
+        
+        <!-- Twilio -->
+        <mxCell id="twilio-api" value="TWILIO (SMS)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#f22f46;fillColor=#ffffff;fontSize=10;fontStyle=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="2355" y="310" width="105" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="twilio-c" value="• Confirmations&#xa;• Reminders&#xa;• Staff alerts" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="2358" y="328" width="100" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- SendGrid -->
+        <mxCell id="sendgrid-api" value="SENDGRID (Email)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1a82e2;fillColor=#ffffff;fontSize=10;fontStyle=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="2355" y="405" width="105" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="sendgrid-c" value="• Confirmations&#xa;• Receipts&#xa;• Reports" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="2358" y="423" width="100" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Sentry -->
+        <mxCell id="sentry-api" value="SENTRY (Errors)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#362d59;fillColor=#ffffff;fontSize=10;fontStyle=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="2355" y="500" width="105" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="sentry-c" value="• Error tracking&#xa;• Performance&#xa;• Alerts" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=2;" vertex="1" parent="1">
+          <mxGeometry x="2358" y="518" width="100" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- OAuth Flow -->
+        <mxCell id="oauth-flow" value="OAUTH 2.0 FLOW (DrChrono/Google)" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#e65100;fillColor=#fff8e1;fontSize=10;fontStyle=1;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="2120" y="875" width="340" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="oauth-c" value="1. Admin clicks &quot;Connect EHR&quot; in dashboard&#xa;2. Redirect to provider authorization page&#xa;3. User grants access, redirected back with code&#xa;4. Exchange code for access_token + refresh_token&#xa;5. Store encrypted tokens in oauth_tokens table&#xa;6. Auto-refresh before expiration" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=7;fontFamily=Courier New;spacingLeft=3;" vertex="1" parent="1">
+          <mxGeometry x="2123" y="893" width="335" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- ==================== FLOW ARROWS ==================== -->
+        <!-- API to Safety -->
+        <mxCell id="flow-api-safety" value="" style="endArrow=classic;html=1;strokeColor=#333;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.3;" edge="1" parent="1" source="api-layer" target="safety-layer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-label-1" value="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#333;strokeColor=none;fontColor=#fff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="425" y="430" width="20" height="20" as="geometry" />
+        </mxCell>
+        
+        <!-- Safety to Intel -->
+        <mxCell id="flow-safety-intel" value="" style="endArrow=classic;html=1;strokeColor=#333;strokeWidth=2;exitX=1;exitY=0.3;entryX=0;entryY=0.3;" edge="1" parent="1" source="safety-layer" target="intel-layer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-label-2" value="2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#333;strokeColor=none;fontColor=#fff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="825" y="425" width="20" height="20" as="geometry" />
+        </mxCell>
+        
+        <!-- Intel to Scheduling -->
+        <mxCell id="flow-intel-sched" value="" style="endArrow=classic;html=1;strokeColor=#333;strokeWidth=2;exitX=1;exitY=0.3;entryX=0;entryY=0.3;" edge="1" parent="1" source="intel-layer" target="sched-layer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-label-3" value="3" style="ellipse;whiteSpace=wrap;html=1;fillColor=#333;strokeColor=none;fontColor=#fff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1268" y="425" width="20" height="20" as="geometry" />
+        </mxCell>
+        
+        <!-- Scheduling to Response -->
+        <mxCell id="flow-sched-resp" value="" style="endArrow=classic;html=1;strokeColor=#333;strokeWidth=2;exitX=1;exitY=0.2;entryX=0;entryY=0.3;" edge="1" parent="1" source="sched-layer" target="resp-layer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-label-4" value="4" style="ellipse;whiteSpace=wrap;html=1;fillColor=#333;strokeColor=none;fontColor=#fff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1785" y="375" width="20" height="20" as="geometry" />
+        </mxCell>
+        
+        <!-- To External -->
+        <mxCell id="flow-to-ext" value="" style="endArrow=classic;html=1;strokeColor=#f57c00;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.2;dashed=1;" edge="1" parent="1" source="resp-layer" target="ext-box">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-label-5" value="5" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f57c00;strokeColor=none;fontColor=#fff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="2070" y="410" width="20" height="20" as="geometry" />
+        </mxCell>
+        
+        <!-- Data connections -->
+        <mxCell id="flow-to-data" value="" style="endArrow=classic;startArrow=classic;html=1;strokeColor=#5e35b1;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="intel-layer" target="data-layer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- ==================== LEGEND ==================== -->
+        <mxCell id="legend" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#999;fillColor=#fafafa;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="2630" y="100" width="180" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-title" value="LEGEND" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="2630" y="105" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-1" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#ff9800;fillColor=#fff8e1;" vertex="1" parent="1">
+          <mxGeometry x="2645" y="130" width="20" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-1-t" value="API Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="2675" y="127" width="80" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-2" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#d32f2f;fillColor=#ffebee;" vertex="1" parent="1">
+          <mxGeometry x="2645" y="150" width="20" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-2-t" value="Safety Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="2675" y="147" width="80" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-3" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#2e7d32;fillColor=#e8f5e9;" vertex="1" parent="1">
+          <mxGeometry x="2645" y="170" width="20" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-3-t" value="Intelligence Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="2675" y="167" width="100" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-4" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#0277bd;fillColor=#e1f5fe;" vertex="1" parent="1">
+          <mxGeometry x="2645" y="190" width="20" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-4-t" value="Scheduling Engine" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="2675" y="187" width="100" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-5" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#5e35b1;fillColor=#ede7f6;" vertex="1" parent="1">
+          <mxGeometry x="2645" y="210" width="20" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-5-t" value="Data Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="2675" y="207" width="80" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-6" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#f57c00;fillColor=#fff3e0;" vertex="1" parent="1">
+          <mxGeometry x="2645" y="230" width="20" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-6-t" value="External Services" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="2675" y="227" width="100" height="18" as="geometry" />
+        </mxCell>
+        
+        <!-- Version -->
+        <mxCell id="version" value="AI Receptionist System Architecture v1.0 | Modular Monolith | January 2025" style="text;html=1;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;fontSize=10;fontStyle=2;fontColor=#999;" vertex="1" parent="1">
+          <mxGeometry x="2350" y="1210" width="450" height="20" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
