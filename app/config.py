@@ -115,6 +115,35 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000"
     """Comma-separated list of allowed CORS origins."""
 
+    # Claude/Anthropic Configuration (Phase 3: Intelligence Layer)
+    anthropic_api_key: str = ""
+    """Anthropic API key for Claude models.
+
+    Required for intent classification and slot extraction.
+    Get from: https://console.anthropic.com/
+    """
+
+    claude_intent_model: str = "claude-3-5-haiku-20241022"
+    """Model for intent classification (fast, cost-effective)."""
+
+    claude_fallback_model: str = "claude-sonnet-4-20250514"
+    """Fallback model for low-confidence classifications."""
+
+    claude_intent_confidence_threshold: float = 0.7
+    """Confidence threshold below which to use fallback model."""
+
+    # Calendar Agent Configuration (Phase 4: Scheduling Engine)
+    calendar_agent_url: str = "http://localhost:8001"
+    """Base URL for Calendar Agent service.
+
+    Calendar Agent handles:
+    - Provider/doctor listings
+    - Slot availability queries
+    - Booking creation/cancellation
+
+    Default assumes local development setup.
+    """
+
     # Pydantic configuration
     model_config = SettingsConfigDict(
         env_file=".env",  # Load from .env file if it exists

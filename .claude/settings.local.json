@@ -25,7 +25,13 @@
       "Bash(python test_patient_verifier.py:*)",
       "Bash(python test_audit_logger.py:*)",
       "Bash(python test_safety_pipeline.py:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(py -c:*)",
+      "Bash(py -m pytest:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(py scripts/verify_setup.py)",
+      "Bash(docker ps:*)",
+      "Bash(git add:*)"
     ]
   }
 }

@@ -43,9 +43,9 @@ python-dotenv==1.0.1
 # orjson==3.9.13  # Optional: FastAPI uses standard json library if not available
 
 # -----------------------------------------------------------------------------
-# Phase 5: Claude Integration (Uncomment when needed)
+# Phase 3: Claude Integration (Intelligence Layer)
 # -----------------------------------------------------------------------------
-# anthropic==0.18.1
+anthropic>=0.45.0
 
 # -----------------------------------------------------------------------------
 # Phase 4: DrChrono Integration (Uncomment when needed)

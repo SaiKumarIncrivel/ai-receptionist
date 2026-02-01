@@ -17,7 +17,7 @@ from fastapi.exceptions import RequestValidationError
 from app.config import settings
 from app.api.middleware.auth import clear_clinic_context
 from app.api.middleware.rate_limit import RateLimitMiddleware
-from app.api.routes import health
+from app.api.routes import health, chat
 from app.infra.database import init_db, close_db
 from app.infra.redis import RedisClient
 
@@ -203,6 +203,9 @@ async def request_lifecycle_middleware(request: Request, call_next):
 
 # Health check routes (no auth required)
 app.include_router(health.router)
+
+# Chat API routes (Phase 4: Scheduling Engine)
+app.include_router(chat.router, prefix="/api/v1")
 
 
 @app.get("/", tags=["Root"])
