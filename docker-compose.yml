@@ -1,44 +1,14 @@
-# =============================================================================
-# AI Receptionist - Docker Compose
-# =============================================================================
-# Local development environment with PostgreSQL and Redis
-# =============================================================================
-
-version: '3.8'
+version: "3.8"
 
 services:
-  # ---------------------------------------------------------------------------
-  # Application
-  # ---------------------------------------------------------------------------
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
+  postgres:
+    image: postgres:16-alpine
+    container_name: ai-receptionist-postgres
+    restart: unless-stopped
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/ai_receptionist
-      - REDIS_URL=redis://redis:6379/0
-      - APP_ENV=development
-      - DEBUG=true
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    volumes:
-      - .:/app  # Mount for hot reload in development
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-
-  # ---------------------------------------------------------------------------
-  # PostgreSQL Database
-  # ---------------------------------------------------------------------------
-  db:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=ai_receptionist
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ai_receptionist
     ports:
       - "5432:5432"
     volumes:
@@ -48,12 +18,13 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
 
-  # ---------------------------------------------------------------------------
-  # Redis Cache
-  # ---------------------------------------------------------------------------
   redis:
     image: redis:7-alpine
+    container_name: ai-receptionist-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
@@ -63,23 +34,13 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    command: redis-server --appendonly yes
-
-  # ---------------------------------------------------------------------------
-  # pgAdmin (Optional - for database management)
-  # ---------------------------------------------------------------------------
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
-      - PGADMIN_DEFAULT_PASSWORD=admin
-    ports:
-      - "5050:80"
-    depends_on:
-      - db
-    profiles:
-      - tools  # Only starts with: docker-compose --profile tools up
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
   redis_data:
+
+networks:
+  app-network:
+    driver: bridge

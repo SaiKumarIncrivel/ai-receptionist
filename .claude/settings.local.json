@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m pip install:*)",
+      "Bash(py -3.12:*)",
+      "Bash(py install:*)",
+      "Bash(.\\\\venv\\\\Scripts\\\\python.exe -m pip:*)",
+      "Bash(./venv/Scripts/python.exe -m pip install:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(./venv/Scripts/alembic.exe upgrade:*)",
+      "Bash(./venv/Scripts/alembic.exe revision:*)",
+      "Bash(if [ ! -f .env ])",
+      "Bash(then cp .env.example .env)",
+      "Bash(else echo \".env already exists\")",
+      "Bash(fi)",
+      "Bash(set:*)",
+      "Bash(./venv/Scripts/pip.exe install:*)",
+      "Bash(ls:*)",
+      "Bash(docker-compose exec:*)",
+      "Bash(./venv/Scripts/python.exe:*)",
+      "Bash(curl:*)",
+      "Bash(python -c:*)",
+      "Bash(pip install:*)",
+      "Bash(python app/safety/patient_verifier.py -c \"\n# Direct test without package import\nimport hashlib\nimport secrets\nfrom datetime import datetime, timedelta, timezone\nfrom enum import Enum\nfrom dataclasses import dataclass, field\nfrom typing import Optional\n\n# Test will run if patient_verifier.py has a __main__ block\n\")",
+      "Bash(python test_patient_verifier.py:*)",
+      "Bash(python test_audit_logger.py:*)",
+      "Bash(python test_safety_pipeline.py:*)",
+      "Bash(python:*)",
+      "Bash(py -c:*)",
+      "Bash(py -m pytest:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(py scripts/verify_setup.py)",
+      "Bash(docker ps:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
