@@ -12,7 +12,7 @@ from typing import Optional
 from app.infra.claude import get_claude_client, ClaudeClient
 from app.core.intelligence.session.models import SessionData
 from app.core.intelligence.session.state import BookingState
-from app.core.scheduling.calendar_client import TimeSlot
+from app.core.scheduling.calendar_client import TimeSlot, Provider
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +23,7 @@ RESPONSE_PROMPT = """You are a friendly, professional AI receptionist for a medi
 Generate a natural, conversational response based on:
 - Current state: {state}
 - Collected information: {collected}
+- Available providers: {providers}
 - Available slots: {slots}
 - Last user message: {user_message}
 - Action needed: {action}
@@ -34,6 +35,8 @@ Guidelines:
 - Confirm information back naturally
 - Use patient's name if known
 - Don't be overly formal or robotic
+- If providers list is available, present them to help user choose
+- If slots are available, present them for selection
 
 Generate ONLY the response text, no JSON or formatting."""
 
@@ -46,6 +49,7 @@ class ResponseContext:
     user_message: str
     collected_data: dict
     available_slots: Optional[list[TimeSlot]] = None
+    available_providers: Optional[list[Provider]] = None
     action: Optional[str] = None
     error_message: Optional[str] = None
     booking_id: Optional[str] = None
@@ -101,9 +105,15 @@ class ResponseGenerator:
             if context.available_slots:
                 slots_text = self._format_slots_for_prompt(context.available_slots)
 
+            # Format providers for prompt
+            providers_text = "None available"
+            if context.available_providers:
+                providers_text = self._format_providers_for_prompt(context.available_providers)
+
             prompt = RESPONSE_PROMPT.format(
                 state=context.state.value,
                 collected=self._format_collected(context.collected_data),
+                providers=providers_text,
                 slots=slots_text,
                 user_message=context.user_message,
                 action=context.action or "respond naturally",
@@ -140,6 +150,9 @@ class ResponseGenerator:
             return None  # Use LLM for initial greeting handling
 
         elif state == BookingState.COLLECT_PROVIDER:
+            # Use dynamic provider list if available
+            if context.available_providers:
+                return self.format_providers(context.available_providers, name_prefix)
             return f"{name_prefix}Which doctor would you like to see?"
 
         elif state == BookingState.COLLECT_DATE:
@@ -215,6 +228,17 @@ class ResponseGenerator:
             )
         return "\n".join(lines)
 
+    def _format_providers_for_prompt(self, providers: list[Provider]) -> str:
+        """Format providers for LLM prompt."""
+        if not providers:
+            return "No providers available"
+
+        lines = []
+        for provider in providers[:10]:  # Limit to 10 for prompt brevity
+            specialty_part = f" ({provider.specialty})" if provider.specialty else ""
+            lines.append(f"- {provider.name}{specialty_part}")
+        return "\n".join(lines)
+
     # === Convenience Methods ===
 
     def greeting(self, clinic_name: Optional[str] = None) -> str:
@@ -256,6 +280,33 @@ class ResponseGenerator:
         if reason:
             return f"I understand you need help with {reason}. {base} Please hold."
         return f"{base} Please hold."
+
+    def format_providers(
+        self,
+        providers: list[Provider],
+        name_prefix: str = "",
+    ) -> str:
+        """Format provider list for user display.
+
+        Args:
+            providers: List of available providers
+            name_prefix: Optional patient name prefix
+
+        Returns:
+            Formatted provider list
+        """
+        if not providers:
+            return f"{name_prefix}Which doctor would you like to see?"
+
+        intro = f"{name_prefix}Which doctor would you like to see? Here are our available providers:"
+        lines = [intro]
+
+        for provider in providers:
+            specialty_part = f" ({provider.specialty})" if provider.specialty else ""
+            lines.append(f"  - {provider.name}{specialty_part}")
+
+        lines.append("\nJust let me know who you'd prefer!")
+        return "\n".join(lines)
 
     def format_slots(
         self,

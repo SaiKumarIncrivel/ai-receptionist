@@ -30,6 +30,7 @@ class FlowAction:
     prompt_for: Optional[str] = None  # What to ask for next
     message: Optional[str] = None  # Pre-defined message to send
     should_search_slots: bool = False  # Whether to search for available slots
+    should_list_providers: bool = False  # Whether to fetch and show provider list
     should_book: bool = False  # Whether to attempt booking
     should_cancel: bool = False  # Whether to cancel booking
     metadata: dict = field(default_factory=dict)
@@ -182,10 +183,14 @@ class ConversationFlow:
                 prompt_for="time",
             )
 
+        # Set should_list_providers when collecting provider
+        should_list_providers = next_field == "provider_name"
+
         return FlowAction(
             next_state=next_state,
             action_type="collect",
             prompt_for=next_field,
+            should_list_providers=should_list_providers,
         )
 
     def _handle_confirmation(

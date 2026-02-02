@@ -25,6 +25,7 @@ from app.core.scheduling.calendar_client import (
     get_calendar_client,
     TimeSlot,
     BookingResult,
+    Provider,
 )
 from app.core.scheduling.response import (
     ResponseGenerator,
@@ -258,7 +259,12 @@ class SchedulingEngine:
         collected = session.collected_data
 
         available_slots: Optional[list[TimeSlot]] = None
+        available_providers: Optional[list[Provider]] = None
         booking_id: Optional[str] = None
+
+        # Fetch providers if needed
+        if action.should_list_providers:
+            available_providers = await self._list_providers(tenant_id)
 
         # Handle pre-defined messages
         if action.message:
@@ -352,6 +358,7 @@ class SchedulingEngine:
             user_message="",  # Not needed for collection prompts
             collected_data=collected,
             available_slots=available_slots,
+            available_providers=available_providers,
             action=action.action_type,
         )
 
@@ -395,6 +402,28 @@ class SchedulingEngine:
         )
 
         return slots
+
+    async def _list_providers(
+        self,
+        tenant_id: str,
+    ) -> list[Provider]:
+        """List available providers for the clinic.
+
+        Args:
+            tenant_id: Clinic/tenant ID
+
+        Returns:
+            List of providers
+        """
+        calendar = self._get_calendar_client()
+
+        try:
+            providers = await calendar.list_providers(tenant_id)
+            logger.debug(f"Found {len(providers)} providers for tenant {tenant_id}")
+            return providers
+        except Exception as e:
+            logger.error(f"Failed to list providers: {e}")
+            return []
 
     async def _create_booking(
         self,
