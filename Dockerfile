@@ -54,4 +54,4 @@ EXPOSE 8000
 # The healthcheck path is configured in railway.toml
 
 # Run the application with dynamic PORT (Railway sets this env var)
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
