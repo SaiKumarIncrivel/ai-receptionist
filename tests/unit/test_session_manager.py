@@ -1,16 +1,15 @@
-"""Tests for session management."""
+"""Tests for v2 session management."""
 
 import pytest
 from unittest.mock import AsyncMock, patch
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.core.intelligence.session.manager import SessionManager
 from app.core.intelligence.session.models import SessionData
-from app.core.intelligence.session.state import BookingState, can_transition
 
 
 class TestSessionManager:
-    """Test Redis session management."""
+    """Test Redis session management for v2."""
 
     @pytest.fixture
     def mock_redis(self):
@@ -39,7 +38,8 @@ class TestSessionManager:
 
             assert session.session_id is not None
             assert session.clinic_id == "clinic-123"
-            assert session.state == BookingState.IDLE
+            assert session.active_agent is None
+            assert session.collected_data == {}
             mock_redis.setex.assert_called_once()
 
     @pytest.mark.asyncio
@@ -62,7 +62,7 @@ class TestSessionManager:
         existing = SessionData(
             session_id="sess-123",
             clinic_id="clinic-456",
-            state=BookingState.COLLECT_DATE,
+            active_agent="scheduling",
         )
         mock_redis.get = AsyncMock(return_value=existing.to_json())
 
@@ -74,7 +74,7 @@ class TestSessionManager:
 
             assert session is not None
             assert session.session_id == "sess-123"
-            assert session.state == BookingState.COLLECT_DATE
+            assert session.active_agent == "scheduling"
 
     @pytest.mark.asyncio
     async def test_get_nonexistent(self, manager, mock_redis):
@@ -122,70 +122,21 @@ class TestSessionManager:
             assert session.session_id != "nonexistent"
 
     @pytest.mark.asyncio
-    async def test_update_state_valid(self, manager, mock_redis):
-        """Test valid state update."""
-        existing = SessionData(
+    async def test_save_session(self, manager, mock_redis):
+        """Test saving session updates Redis."""
+        session = SessionData(
             session_id="sess-123",
             clinic_id="clinic-456",
-            state=BookingState.IDLE,
+            active_agent="faq",
+            collected_data={"patient_name": "John Doe"},
         )
-        mock_redis.get = AsyncMock(return_value=existing.to_json())
 
         with patch(
             "app.core.intelligence.session.manager.get_redis",
             return_value=mock_redis,
         ):
-            updated = await manager.update_state(
-                "clinic-456", "sess-123", BookingState.COLLECT_PROVIDER
-            )
-
-            assert updated is not None
-            assert updated.state == BookingState.COLLECT_PROVIDER
-            assert updated.previous_state == BookingState.IDLE
-
-    @pytest.mark.asyncio
-    async def test_update_state_invalid(self, manager, mock_redis):
-        """Test invalid state transition is rejected."""
-        existing = SessionData(
-            session_id="sess-123",
-            clinic_id="clinic-456",
-            state=BookingState.IDLE,
-        )
-        mock_redis.get = AsyncMock(return_value=existing.to_json())
-
-        with patch(
-            "app.core.intelligence.session.manager.get_redis",
-            return_value=mock_redis,
-        ):
-            # IDLE -> BOOKED is not valid
-            updated = await manager.update_state(
-                "clinic-456", "sess-123", BookingState.BOOKED
-            )
-
-            assert updated is None
-
-    @pytest.mark.asyncio
-    async def test_update_collected(self, manager, mock_redis):
-        """Test updating collected data."""
-        existing = SessionData(
-            session_id="sess-123",
-            clinic_id="clinic-456",
-        )
-        mock_redis.get = AsyncMock(return_value=existing.to_json())
-
-        with patch(
-            "app.core.intelligence.session.manager.get_redis",
-            return_value=mock_redis,
-        ):
-            updated = await manager.update_collected(
-                "clinic-456",
-                "sess-123",
-                {"provider_name": "Dr. Smith", "date_raw": "Tuesday"},
-            )
-
-            assert updated is not None
-            assert updated.collected_data["provider_name"] == "Dr. Smith"
-            assert updated.collected_data["date_raw"] == "Tuesday"
+            await manager.save(session)
+            mock_redis.setex.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_delete_session(self, manager, mock_redis):
@@ -201,14 +152,29 @@ class TestSessionManager:
 
 
 class TestSessionData:
-    """Test SessionData model."""
+    """Test v2 SessionData model."""
+
+    def test_basic_creation(self):
+        """Test creating a session with defaults."""
+        session = SessionData(
+            session_id="test-123",
+            clinic_id="clinic-456",
+        )
+
+        assert session.session_id == "test-123"
+        assert session.clinic_id == "clinic-456"
+        assert session.active_agent is None
+        assert session.collected_data == {}
+        assert session.claude_messages == []
+        assert session.router_context == []
+        assert session.message_count == 0
 
     def test_serialization_roundtrip(self):
         """Test JSON serialization/deserialization."""
         session = SessionData(
             session_id="test-123",
             clinic_id="clinic-456",
-            state=BookingState.COLLECT_DATE,
+            active_agent="scheduling",
             collected_data={"provider_name": "Dr. Smith"},
         )
 
@@ -216,110 +182,168 @@ class TestSessionData:
         restored = SessionData.from_json(json_str)
 
         assert restored.session_id == session.session_id
-        assert restored.state == session.state
+        assert restored.active_agent == session.active_agent
         assert restored.collected_data == session.collected_data
 
-    def test_add_turn(self):
-        """Test adding conversation turns."""
+    def test_store_turn_simple(self):
+        """Test storing a simple conversation turn."""
         session = SessionData(
             session_id="test-123",
             clinic_id="clinic-456",
         )
 
-        session.add_turn("user", "Hello")
-        session.add_turn("assistant", "How can I help?")
+        session.store_turn(
+            user_message="Hello",
+            assistant_content="Hi, how can I help?",
+            text_response="Hi, how can I help?",
+        )
 
-        assert len(session.message_history) == 2
-        assert session.message_count == 2
-        assert session.message_history[0]["role"] == "user"
-        assert session.message_history[1]["role"] == "assistant"
+        assert session.message_count == 1
+        assert len(session.claude_messages) == 2
+        assert session.claude_messages[0] == {"role": "user", "content": "Hello"}
+        assert session.claude_messages[1] == {"role": "assistant", "content": "Hi, how can I help?"}
+        assert len(session.router_context) == 2
 
-    def test_add_turn_with_intent(self):
-        """Test adding turn with intent tracking."""
-        from app.core.intelligence.intent.types import Intent
-
+    def test_store_turn_with_tool_use(self):
+        """Test storing a turn with tool_use blocks."""
         session = SessionData(
             session_id="test-123",
             clinic_id="clinic-456",
         )
 
-        session.add_turn("user", "I need an appointment", intent=Intent.SCHEDULING)
+        # Simulate a message chain with tool calls
+        message_chain = [
+            {"role": "assistant", "content": [
+                {"type": "text", "text": "Let me check availability."},
+                {"type": "tool_use", "id": "tool-1", "name": "find_optimal_slots", "input": {"date": "2024-01-15"}},
+            ]},
+            {"role": "user", "content": [
+                {"type": "tool_result", "tool_use_id": "tool-1", "content": '{"slots": []}'},
+            ]},
+            {"role": "assistant", "content": "No slots available for that date."},
+        ]
 
-        assert session.current_intent == "scheduling"
-        assert "scheduling" in session.intent_history
+        session.store_turn(
+            user_message="I need an appointment tomorrow",
+            assistant_content=message_chain,
+            text_response="No slots available for that date.",
+        )
 
-    def test_transition_to_valid(self):
-        """Test valid state transition."""
-        session = SessionData(state=BookingState.IDLE)
+        assert session.message_count == 1
+        # User message + 3 messages from chain
+        assert len(session.claude_messages) == 4
+        # Router context only has text
+        assert len(session.router_context) == 2
 
-        success = session.transition_to(BookingState.COLLECT_PROVIDER)
+    def test_merge_entities(self):
+        """Test merging entities into collected data."""
+        session = SessionData(
+            session_id="test-123",
+            clinic_id="clinic-456",
+            collected_data={"patient_name": "John Doe"},
+        )
 
-        assert success is True
-        assert session.state == BookingState.COLLECT_PROVIDER
-        assert session.previous_state == BookingState.IDLE
+        session.merge_entities({
+            "provider_name": "Dr. Smith",
+            "date": "2024-01-15",
+            "patient_name": None,  # Should not overwrite
+        })
 
-    def test_transition_to_invalid(self):
-        """Test invalid state transition."""
-        session = SessionData(state=BookingState.COMPLETED)
+        assert session.collected_data["patient_name"] == "John Doe"
+        assert session.collected_data["provider_name"] == "Dr. Smith"
+        assert session.collected_data["date"] == "2024-01-15"
 
-        success = session.transition_to(BookingState.COLLECT_PROVIDER)
+    def test_get_router_context_str(self):
+        """Test getting router context string."""
+        session = SessionData(
+            session_id="test-123",
+            clinic_id="clinic-456",
+            active_agent="scheduling",
+            collected_data={"provider_name": "Dr. Smith"},
+        )
 
-        assert success is False
-        assert session.state == BookingState.COMPLETED  # Unchanged
+        session.store_turn(
+            user_message="I need an appointment with Dr. Smith",
+            assistant_content="Sure, when would you like to come in?",
+            text_response="Sure, when would you like to come in?",
+        )
+
+        context = session.get_router_context_str()
+
+        assert "Patient: I need an appointment" in context
+        assert "Receptionist: Sure" in context
+        assert "provider_name: Dr. Smith" in context
+        assert "scheduling" in context
 
     def test_get_context_for_llm(self):
-        """Test LLM context generation."""
+        """Test LLM context generation for v2."""
         session = SessionData(
             session_id="test-123",
             clinic_id="clinic-456",
-            state=BookingState.CONFIRM_BOOKING,
-            collected_data={"provider_name": "Dr. Smith", "date_raw": "Tuesday"},
-            awaiting_confirmation=True,
+            active_agent="scheduling",
+            collected_data={"provider_name": "Dr. Smith", "date": "2024-01-15"},
+            booking_id="booking-789",
         )
 
         context = session.get_context_for_llm()
 
-        assert context["state"] == "confirm_booking"
-        assert context["awaiting_confirmation"] is True
-        assert "provider_name" in context["collected"]
+        assert context["active_agent"] == "scheduling"
+        assert context["collected"]["provider_name"] == "Dr. Smith"
+        assert context["booking_id"] == "booking-789"
 
     def test_max_history_limit(self):
-        """Test history is limited to max turns."""
-        session = SessionData(max_history_turns=3)
+        """Test history is limited to max messages."""
+        session = SessionData(
+            session_id="test-123",
+            clinic_id="clinic-456",
+            max_messages=4,  # Small limit for testing
+            max_router_context=2,
+        )
 
         for i in range(5):
-            session.add_turn("user", f"Message {i}")
+            session.store_turn(
+                user_message=f"Message {i}",
+                assistant_content=f"Response {i}",
+                text_response=f"Response {i}",
+            )
 
-        assert len(session.message_history) == 3
+        # Should be trimmed to max
+        assert len(session.claude_messages) == 4
+        assert len(session.router_context) == 2
         assert session.message_count == 5
 
+    def test_serialization_with_tool_blocks(self):
+        """Test JSON serialization preserves tool_use blocks."""
+        session = SessionData(
+            session_id="test-123",
+            clinic_id="clinic-456",
+        )
 
-class TestBookingState:
-    """Test booking state transitions."""
+        session.claude_messages = [
+            {"role": "user", "content": "Book an appointment"},
+            {"role": "assistant", "content": [
+                {"type": "text", "text": "Let me check."},
+                {"type": "tool_use", "id": "t1", "name": "find_slots", "input": {"date": "2024-01-15"}},
+            ]},
+            {"role": "user", "content": [
+                {"type": "tool_result", "tool_use_id": "t1", "content": '{"slots": []}'},
+            ]},
+        ]
 
-    def test_valid_transitions_from_idle(self):
-        """Test valid transitions from IDLE."""
-        assert can_transition(BookingState.IDLE, BookingState.COLLECT_PROVIDER)
-        assert can_transition(BookingState.IDLE, BookingState.COLLECT_DATE)
-        assert can_transition(BookingState.IDLE, BookingState.HANDED_OFF)
+        json_str = session.to_json()
+        restored = SessionData.from_json(json_str)
 
-    def test_invalid_transitions_from_idle(self):
-        """Test invalid transitions from IDLE."""
-        assert not can_transition(BookingState.IDLE, BookingState.BOOKED)
-        assert not can_transition(BookingState.IDLE, BookingState.COMPLETED)
+        assert len(restored.claude_messages) == 3
+        assert restored.claude_messages[1]["content"][1]["name"] == "find_slots"
+        assert restored.claude_messages[2]["content"][0]["tool_use_id"] == "t1"
 
-    def test_terminal_state(self):
-        """Test COMPLETED is terminal."""
-        assert not can_transition(BookingState.COMPLETED, BookingState.IDLE)
-        assert not can_transition(BookingState.COMPLETED, BookingState.COLLECT_DATE)
+    def test_empty_router_context_str(self):
+        """Test router context string for new session."""
+        session = SessionData(
+            session_id="test-123",
+            clinic_id="clinic-456",
+        )
 
-    def test_booking_flow(self):
-        """Test typical booking flow transitions."""
-        # IDLE -> COLLECT_DATE -> COLLECT_TIME -> SEARCHING -> SHOWING_SLOTS -> CONFIRM -> BOOKED
-        assert can_transition(BookingState.IDLE, BookingState.COLLECT_DATE)
-        assert can_transition(BookingState.COLLECT_DATE, BookingState.COLLECT_TIME)
-        assert can_transition(BookingState.COLLECT_TIME, BookingState.SEARCHING)
-        assert can_transition(BookingState.SEARCHING, BookingState.SHOWING_SLOTS)
-        assert can_transition(BookingState.SHOWING_SLOTS, BookingState.CONFIRM_BOOKING)
-        assert can_transition(BookingState.CONFIRM_BOOKING, BookingState.BOOKED)
-        assert can_transition(BookingState.BOOKED, BookingState.COMPLETED)
+        context = session.get_router_context_str()
+
+        assert "New conversation" in context

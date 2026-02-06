@@ -31,7 +31,8 @@
       "Bash(python -m pytest:*)",
       "Bash(py scripts/verify_setup.py)",
       "Bash(docker ps:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(xargs cat:*)"
     ]
   }
 }

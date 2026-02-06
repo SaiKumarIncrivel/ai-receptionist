@@ -2,6 +2,8 @@
 Chat API Endpoint.
 
 Handles conversational messages for AI receptionist.
+
+v2 Architecture: Uses Dispatcher with multi-agent routing.
 """
 
 import logging
@@ -10,11 +12,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Header, status
 from pydantic import BaseModel, Field
 
-from app.core.scheduling.engine import (
-    SchedulingEngine,
-    EngineResponse,
-    get_scheduling_engine,
-)
+from app.core.agent.dispatch import Dispatcher, DispatchResponse, get_dispatcher
 
 logger = logging.getLogger(__name__)
 
@@ -51,11 +49,11 @@ class ChatResponse(BaseModel):
     )
     state: str = Field(
         ...,
-        description="Current conversation state",
+        description="Current conversation state (v2: active domain)",
     )
     intent: Optional[str] = Field(
         default=None,
-        description="Detected intent from user message",
+        description="Detected intent from user message (v2: sub_intent)",
     )
     confidence: Optional[float] = Field(
         default=None,
@@ -71,7 +69,7 @@ class ChatResponse(BaseModel):
     )
     available_slots: Optional[list[dict]] = Field(
         default=None,
-        description="Available appointment slots if searching",
+        description="Available appointment slots (v2: handled by agent)",
     )
     processing_time_ms: Optional[float] = Field(
         default=None,
@@ -110,11 +108,11 @@ async def chat(
     """
     Process a chat message.
 
-    Sends the user's message through the scheduling engine which:
-    - Classifies the intent
-    - Extracts relevant information (slots)
-    - Manages conversation state
-    - Generates an appropriate response
+    v2 Architecture:
+    - Routes message through safety pipeline
+    - Uses router for domain classification
+    - Dispatches to appropriate agent (scheduling, faq, conversation, etc.)
+    - Returns AI-generated response
 
     The session_id should be preserved across requests to maintain
     conversation context.
@@ -126,8 +124,8 @@ async def chat(
         )
 
     try:
-        engine = get_scheduling_engine()
-        response: EngineResponse = await engine.process(
+        dispatcher = get_dispatcher()
+        response: DispatchResponse = await dispatcher.process(
             tenant_id=x_tenant_id,
             message=request.message,
             session_id=request.session_id,
@@ -136,14 +134,12 @@ async def chat(
         return ChatResponse(
             message=response.message,
             session_id=response.session_id,
-            state=response.state.value,
-            intent=response.intent.value if response.intent else None,
+            state=response.domain,  # v2: domain maps to state
+            intent=response.sub_intent,  # v2: sub_intent maps to intent
             confidence=response.confidence,
             booking_id=response.booking_id,
             collected_data=response.collected_data,
-            available_slots=[s.to_dict() for s in response.available_slots]
-            if response.available_slots
-            else None,
+            available_slots=None,  # v2: agent handles slots internally
             processing_time_ms=response.processing_time_ms,
         )
 
@@ -174,8 +170,8 @@ async def get_session(
     ),
 ) -> dict:
     """Get session information."""
-    engine = get_scheduling_engine()
-    session = await engine.get_session(x_tenant_id, session_id)
+    dispatcher = get_dispatcher()
+    session = await dispatcher.get_session(x_tenant_id, session_id)
 
     if session is None:
         raise HTTPException(
@@ -186,9 +182,9 @@ async def get_session(
     return {
         "session_id": session.session_id,
         "clinic_id": session.clinic_id,
-        "state": session.state.value,
+        "state": session.active_agent or "idle",  # v2: active_agent replaces state
         "collected_data": session.collected_data,
-        "turn_count": len(session.turns),
+        "message_count": session.message_count,
         "created_at": session.created_at.isoformat(),
         "updated_at": session.updated_at.isoformat(),
     }
@@ -209,8 +205,8 @@ async def reset_session(
     ),
 ) -> None:
     """Reset session to initial state."""
-    engine = get_scheduling_engine()
-    session = await engine.reset_session(x_tenant_id, session_id)
+    dispatcher = get_dispatcher()
+    session = await dispatcher.reset_session(x_tenant_id, session_id)
 
     if session is None:
         raise HTTPException(

@@ -34,6 +34,20 @@ class ClaudeResponse:
     latency_ms: float
 
 
+@dataclass
+class ToolUseBlock:
+    """A tool use block from Claude's response."""
+    id: str
+    name: str
+    input: dict
+
+
+@dataclass
+class TextBlock:
+    """A text block from Claude's response."""
+    text: str
+
+
 class ClaudeClient:
     """
     Async Claude API client wrapper.
@@ -139,6 +153,71 @@ class ClaudeClient:
                 )
             raise ClaudeClientError(f"Claude API call failed: {e}") from e
 
+    async def create_message(
+        self,
+        messages: list[dict],
+        system: Optional[str] = None,
+        model: Optional[str] = None,
+        max_tokens: int = 1024,
+        temperature: float = 0.0,
+        tools: Optional[list[dict]] = None,
+        tool_choice: Optional[dict] = None,
+    ) -> Any:
+        """
+        Full Anthropic messages API call with tool support.
+
+        This method returns the raw Anthropic response object, allowing callers
+        to handle tool_use blocks, multiple content blocks, and stop_reason directly.
+
+        Args:
+            messages: List of message dicts with role and content
+            system: Optional system prompt
+            model: Model to use (defaults to default_agent_model from settings)
+            max_tokens: Maximum tokens in response
+            temperature: Sampling temperature (0.0 for deterministic)
+            tools: Optional list of tool definitions in Anthropic format
+            tool_choice: Optional tool_choice dict to force tool use
+
+        Returns:
+            Raw Anthropic response object with:
+            - content: list of content blocks (text, tool_use)
+            - stop_reason: "end_turn" or "tool_use"
+            - usage: token counts
+
+        Example:
+            response = await client.create_message(
+                messages=[{"role": "user", "content": "Book an appointment"}],
+                system="You are a receptionist.",
+                tools=[{
+                    "name": "book_appointment",
+                    "description": "Book an appointment",
+                    "input_schema": {...}
+                }],
+                tool_choice={"type": "tool", "name": "route_message"}
+            )
+
+            if response.stop_reason == "tool_use":
+                tool_block = response.content[0]
+                # tool_block.name, tool_block.input available
+        """
+        model = model or settings.default_agent_model
+
+        try:
+            response = await self._call_with_retry(
+                messages=messages,
+                system=system,
+                model=model,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                tools=tools,
+                tool_choice=tool_choice,
+            )
+            return response
+
+        except Exception as e:
+            logger.error(f"create_message failed: {e}")
+            raise ClaudeClientError(f"Claude API call failed: {e}") from e
+
     async def _call_with_retry(
         self,
         messages: list[dict],
@@ -147,6 +226,8 @@ class ClaudeClient:
         max_tokens: int,
         temperature: float,
         max_retries: int = 3,
+        tools: Optional[list[dict]] = None,
+        tool_choice: Optional[dict] = None,
     ) -> Any:
         """Call API with exponential backoff retry."""
         last_error = None
@@ -161,6 +242,10 @@ class ClaudeClient:
                 }
                 if system:
                     kwargs["system"] = system
+                if tools:
+                    kwargs["tools"] = tools
+                if tool_choice:
+                    kwargs["tool_choice"] = tool_choice
 
                 return await self._client.messages.create(**kwargs)
 

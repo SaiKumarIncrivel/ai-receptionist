@@ -1,4 +1,4 @@
-"""Redis-based session management for the intelligence layer."""
+"""Redis-based session management for v2 multi-agent architecture."""
 
 import logging
 from datetime import datetime, timezone
@@ -8,12 +8,12 @@ from uuid import uuid4
 from app.config import settings
 from app.infra.redis import get_redis, APP_PREFIX
 from .models import SessionData
-from .state import BookingState, can_transition
 
 
 def _utcnow() -> datetime:
     """Get current UTC time as timezone-aware datetime."""
     return datetime.now(timezone.utc)
+
 
 logger = logging.getLogger(__name__)
 
@@ -23,11 +23,16 @@ SESSION_PREFIX = f"{APP_PREFIX}intelligence:session:"
 
 class SessionManager:
     """
-    Redis-based session manager for conversation state.
+    Redis-based session manager for v2 multi-agent architecture.
 
     Key pattern: receptionist:v1:intelligence:session:{clinic_id}:{session_id}
 
     Gracefully handles Redis unavailability with in-memory fallback.
+
+    v2 Changes:
+    - Removed BookingState and state transition logic (Claude handles flow)
+    - Simplified to basic CRUD operations
+    - Session stores full Claude conversation format
     """
 
     def __init__(self):
@@ -60,7 +65,6 @@ class SessionManager:
             session_id=session_id or str(uuid4()),
             clinic_id=clinic_id,
             patient_id=patient_id,
-            state=BookingState.IDLE,
         )
 
         redis = await get_redis()
@@ -154,40 +158,6 @@ class SessionManager:
             self._in_memory_fallback[session.session_id] = session
             return True
 
-    async def update(
-        self,
-        session: SessionData,
-        refresh_ttl: bool = True,
-    ) -> bool:
-        """
-        Update session in Redis.
-
-        Args:
-            session: SessionData to update
-            refresh_ttl: Whether to refresh TTL
-
-        Returns:
-            True if updated successfully
-        """
-        session.updated_at = _utcnow()
-
-        redis = await get_redis()
-
-        if redis:
-            key = self._key(session.clinic_id, session.session_id)
-
-            if refresh_ttl:
-                await redis.setex(key, self._ttl, session.to_json())
-            else:
-                await redis.set(key, session.to_json(), keepttl=True)
-
-            logger.debug(f"Session updated: {session.session_id}")
-            return True
-        else:
-            # Fallback to in-memory
-            self._in_memory_fallback[session.session_id] = session
-            return True
-
     async def delete(
         self,
         clinic_id: str,
@@ -220,110 +190,41 @@ class SessionManager:
                 return True
             return False
 
-    async def update_state(
+    async def reset(
         self,
         clinic_id: str,
         session_id: str,
-        new_state: BookingState,
     ) -> Optional[SessionData]:
         """
-        Update session state with transition validation.
+        Reset a session to initial state.
+
+        Keeps the session ID but clears all conversation data.
 
         Args:
             clinic_id: Clinic identifier
             session_id: Session identifier
-            new_state: Target state
 
         Returns:
-            Updated SessionData or None if transition invalid
-        """
-        session = await self.get(clinic_id, session_id)
-
-        if session is None:
-            logger.warning(f"Session not found: {session_id}")
-            return None
-
-        if not can_transition(session.state, new_state):
-            logger.warning(
-                f"Invalid transition: {session.state.value} -> {new_state.value}"
-            )
-            return None
-
-        session.previous_state = session.state
-        session.state = new_state
-        await self.update(session)
-
-        logger.debug(f"Session {session_id} transitioned to {new_state.value}")
-        return session
-
-    async def update_collected(
-        self,
-        clinic_id: str,
-        session_id: str,
-        updates: dict,
-    ) -> Optional[SessionData]:
-        """
-        Update collected data in session.
-
-        Args:
-            clinic_id: Clinic identifier
-            session_id: Session identifier
-            updates: Data to merge into collected_data
-
-        Returns:
-            Updated SessionData or None if not found
+            Reset SessionData or None if not found
         """
         session = await self.get(clinic_id, session_id)
 
         if session is None:
             return None
 
-        for key, value in updates.items():
-            if value is not None:
-                session.collected_data[key] = value
+        # Reset conversation state while keeping identifiers
+        session.active_agent = None
+        session.previous_agent = None
+        session.collected_data = {}
+        session.claude_messages = []
+        session.router_context = []
+        session.message_count = 0
+        session.booking_id = None
+        session.updated_at = _utcnow()
 
-        await self.update(session)
-        return session
+        await self.save(session)
 
-    async def add_message(
-        self,
-        clinic_id: str,
-        session_id: str,
-        role: str,
-        content: str,
-        intent: Optional[str] = None,
-    ) -> Optional[SessionData]:
-        """
-        Add a message to session history.
-
-        Args:
-            clinic_id: Clinic identifier
-            session_id: Session identifier
-            role: "user" or "assistant"
-            content: Message content
-            intent: Detected intent (optional)
-
-        Returns:
-            Updated SessionData or None if not found
-        """
-        session = await self.get(clinic_id, session_id)
-
-        if session is None:
-            return None
-
-        # Import here to avoid circular imports
-        from app.core.intelligence.intent.types import Intent
-
-        intent_enum = None
-        if intent:
-            try:
-                intent_enum = Intent(intent)
-            except ValueError:
-                pass
-
-        session.add_turn(role, content, intent=intent_enum)
-        await self.update(session)
-
+        logger.debug(f"Session reset: {session_id}")
         return session
 
     async def _refresh_ttl(self, clinic_id: str, session_id: str) -> bool:

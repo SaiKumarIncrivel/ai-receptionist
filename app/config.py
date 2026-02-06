@@ -132,6 +132,22 @@ class Settings(BaseSettings):
     claude_intent_confidence_threshold: float = 0.7
     """Confidence threshold below which to use fallback model."""
 
+    # v2 Agent Configuration
+    scheduling_agent_model: str = "claude-sonnet-4-20250514"
+    """Model for scheduling agent (needs strong multi-turn reasoning)."""
+
+    default_agent_model: str = "claude-3-5-haiku-20241022"
+    """Model for FAQ, conversation, and handoff agents."""
+
+    router_model: str = "claude-3-5-haiku-20241022"
+    """Model for intent routing."""
+
+    router_fallback_model: str = "claude-sonnet-4-20250514"
+    """Fallback model when router confidence is low."""
+
+    router_confidence_threshold: float = 0.7
+    """Confidence below which to retry with fallback model."""
+
     # Calendar Agent Configuration (Phase 4: Scheduling Engine)
     calendar_agent_url: str = "http://localhost:8001"
     """Base URL for Calendar Agent service.

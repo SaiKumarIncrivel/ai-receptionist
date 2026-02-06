@@ -1,175 +1,235 @@
-"""Session data models."""
+"""
+Session data models for v2 Multi-Agent Architecture.
+
+Stores full Claude conversation format including tool_use blocks.
+"""
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, date, time, timezone
+from datetime import datetime, timezone
 from typing import Any, Optional
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 
 def _utcnow() -> datetime:
     """Get current UTC time as timezone-aware datetime."""
     return datetime.now(timezone.utc)
 
-from app.core.intelligence.intent.types import Intent
-from app.core.intelligence.slots.types import ExtractedSlots, AppointmentType
-from app.core.intelligence.session.state import BookingState, can_transition
-
-
-@dataclass
-class ConversationTurn:
-    """A single turn in the conversation."""
-
-    role: str  # "user" or "assistant"
-    content: str
-    timestamp: datetime = field(default_factory=_utcnow)
-    intent: Optional[Intent] = None
-    slots: Optional[ExtractedSlots] = None
-
-    def to_dict(self) -> dict:
-        """Convert to dictionary."""
-        return {
-            "role": self.role,
-            "content": self.content,
-            "timestamp": self.timestamp.isoformat(),
-            "intent": self.intent.value if self.intent else None,
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict) -> "ConversationTurn":
-        """Create from dictionary."""
-        return cls(
-            role=data["role"],
-            content=data["content"],
-            timestamp=datetime.fromisoformat(data["timestamp"]),
-            intent=Intent(data["intent"]) if data.get("intent") else None,
-        )
-
 
 @dataclass
 class SessionData:
-    """Complete session data stored in Redis."""
+    """
+    Complete session data stored in Redis for v2 multi-agent architecture.
+
+    Key changes from v1:
+    - Removed: state, previous_state (no more state machine)
+    - Removed: current_intent, intent_history (router handles per-message)
+    - Removed: shown_slots, selected_slot, awaiting_confirmation (agent handles)
+    - Removed: last_bot_question (full history captures this)
+    - Added: active_agent, previous_agent (agent tracking)
+    - Added: claude_messages (full Claude conversation format with tool_use)
+    - Added: router_context (condensed text-only for router)
+
+    The key insight: Claude's context window IS the state.
+    We store the full conversation including tool calls and results.
+    """
 
     # Identifiers
     session_id: str = field(default_factory=lambda: str(uuid4()))
     clinic_id: str = ""
     patient_id: Optional[str] = None
 
-    # State
-    state: BookingState = BookingState.IDLE
-    previous_state: Optional[BookingState] = None
+    # Agent tracking
+    active_agent: Optional[str] = None  # "scheduling", "faq", etc.
+    previous_agent: Optional[str] = None  # For agent switching
 
-    # Accumulated slots from conversation
+    # Collected patient data (persists across agents)
     collected_data: dict = field(default_factory=dict)
 
-    # Current intent context
-    current_intent: Optional[str] = None
+    # Full Claude conversation history (Anthropic messages format)
+    # Includes tool_use and tool_result blocks for full context
+    claude_messages: list[dict] = field(default_factory=list)
+    max_messages: int = 40  # ~20 turns with tool calls
 
-    # Intent history
-    intent_history: list[str] = field(default_factory=list)
+    # Condensed history for router (text-only, no tool blocks)
+    # Used by router to understand context without processing full tool chain
+    router_context: list[dict] = field(default_factory=list)
+    max_router_context: int = 10
 
-    # Conversation history (last N turns)
-    message_history: list[dict] = field(default_factory=list)
-    max_history_turns: int = 10
-
-    # Message count
+    # Metadata
     message_count: int = 0
-
-    # Shown slots from availability search
-    shown_slots: list[dict] = field(default_factory=list)
-
-    # Selected slot
-    selected_slot: Optional[dict] = None
-
-    # Booking result
     booking_id: Optional[str] = None
-
-    # Awaiting confirmation flag
-    awaiting_confirmation: bool = False
-
-    # Last bot question
-    last_bot_question: Optional[str] = None
-
-    # Timestamps
     created_at: datetime = field(default_factory=_utcnow)
     updated_at: datetime = field(default_factory=_utcnow)
 
-    def add_turn(
+    def store_turn(
         self,
-        role: str,
-        content: str,
-        intent: Optional[Intent] = None,
-        slots: Optional[ExtractedSlots] = None,
+        user_message: str,
+        assistant_content: Any,
+        text_response: str,
     ) -> None:
-        """Add a conversation turn, maintaining max history."""
-        turn = {
-            "role": role,
-            "content": content,
-            "timestamp": _utcnow().isoformat(),
-            "intent": intent.value if intent else None,
-        }
-        self.message_history.append(turn)
+        """
+        Store a complete conversation turn.
 
-        # Trim to max size
-        if len(self.message_history) > self.max_history_turns:
-            self.message_history = self.message_history[-self.max_history_turns:]
+        Args:
+            user_message: The user's message
+            assistant_content: Full assistant response. Can be:
+                - str: Simple text response
+                - list[dict]: Full message chain including tool calls
+            text_response: The final text response shown to user
+        """
+        # Add user message to full history
+        self.claude_messages.append({"role": "user", "content": user_message})
 
-        # Track intent
-        if intent:
-            self.current_intent = intent.value
-            self.intent_history.append(intent.value)
+        # Add assistant response(s) to full history
+        if isinstance(assistant_content, list):
+            # Full message chain with tool calls
+            # assistant_content is already in the right format from _run_tool_loop
+            for msg in assistant_content:
+                if msg not in self.claude_messages:  # Avoid duplicates
+                    self.claude_messages.append(msg)
+        else:
+            # Simple text response
+            self.claude_messages.append({"role": "assistant", "content": text_response})
 
-        # Merge slots into collected data
-        if slots and slots.has_any():
-            slot_dict = slots.to_dict()
-            for key, value in slot_dict.items():
-                if value is not None:
-                    self.collected_data[key] = value
+        # Add to condensed router context (text-only)
+        self.router_context.append({"role": "user", "content": user_message})
+        self.router_context.append({"role": "assistant", "content": text_response})
 
         self.message_count += 1
         self.updated_at = _utcnow()
+        self._trim()
 
-    def transition_to(self, new_state: BookingState) -> bool:
-        """Attempt to transition to a new state."""
-        if can_transition(self.state, new_state):
-            self.previous_state = self.state
-            self.state = new_state
-            self.updated_at = _utcnow()
-            return True
-        return False
+    def get_claude_messages(self) -> list[dict]:
+        """
+        Get full message history for Claude agent calls.
 
-    def get_context_for_llm(self) -> dict:
-        """Get context for LLM prompts."""
-        return {
-            "state": self.state.value,
-            "collected": self.collected_data,
-            "awaiting_confirmation": self.awaiting_confirmation,
-            "last_bot_question": self.last_bot_question,
-            "message_count": self.message_count,
-        }
+        Returns a copy of claude_messages for use in API calls.
+        """
+        return list(self.claude_messages)
+
+    def get_router_context_str(self) -> str:
+        """
+        Get condensed context string for router prompt.
+
+        Returns a formatted string with recent conversation and collected data.
+        """
+        if not self.router_context:
+            return "New conversation, no prior context."
+
+        # Get last 6 messages (3 turns)
+        recent = self.router_context[-6:]
+        lines = []
+        for msg in recent:
+            role = "Patient" if msg["role"] == "user" else "Receptionist"
+            content = msg.get("content", "")
+            if isinstance(content, str):
+                # Truncate long messages
+                content = content[:200]
+            lines.append(f"{role}: {content}")
+
+        context = "\n".join(lines)
+
+        # Add collected data summary
+        if self.collected_data:
+            collected = ", ".join(
+                f"{k}: {v}" for k, v in self.collected_data.items() if v
+            )
+            context += f"\n\nCollected so far: {collected}"
+
+        # Add current agent info
+        if self.active_agent:
+            context += f"\nCurrently in: {self.active_agent} flow"
+
+        return context
+
+    def merge_entities(self, entities: dict) -> None:
+        """
+        Merge router-extracted entities into collected data.
+
+        Only updates fields that have non-None values.
+
+        Args:
+            entities: Dict of extracted entities from router
+        """
+        if entities:
+            for key, value in entities.items():
+                if value is not None:
+                    self.collected_data[key] = value
+
+    def _trim(self) -> None:
+        """Keep histories within configured limits."""
+        if len(self.claude_messages) > self.max_messages:
+            self.claude_messages = self.claude_messages[-self.max_messages:]
+        if len(self.router_context) > self.max_router_context:
+            self.router_context = self.router_context[-self.max_router_context:]
 
     def to_json(self) -> str:
-        """Convert to JSON string for Redis storage."""
+        """
+        Convert to JSON string for Redis storage.
+
+        Handles serialization of datetime and nested dicts.
+        """
         data = {
             "session_id": self.session_id,
             "clinic_id": self.clinic_id,
             "patient_id": self.patient_id,
-            "state": self.state.value,
-            "previous_state": self.previous_state.value if self.previous_state else None,
+            "active_agent": self.active_agent,
+            "previous_agent": self.previous_agent,
             "collected_data": self.collected_data,
-            "current_intent": self.current_intent,
-            "intent_history": self.intent_history,
-            "message_history": self.message_history,
+            "claude_messages": self._serialize_messages(self.claude_messages),
+            "router_context": self.router_context,
             "message_count": self.message_count,
-            "shown_slots": self.shown_slots,
-            "selected_slot": self.selected_slot,
             "booking_id": self.booking_id,
-            "awaiting_confirmation": self.awaiting_confirmation,
-            "last_bot_question": self.last_bot_question,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
         return json.dumps(data)
+
+    def _serialize_messages(self, messages: list[dict]) -> list[dict]:
+        """
+        Serialize claude_messages for JSON storage.
+
+        Handles potential non-serializable types in tool inputs/outputs.
+        """
+        serialized = []
+        for msg in messages:
+            if isinstance(msg.get("content"), list):
+                # Message with content blocks (tool_use, tool_result, text)
+                serialized_content = []
+                for block in msg["content"]:
+                    if isinstance(block, dict):
+                        serialized_content.append(block)
+                    else:
+                        # Handle Anthropic SDK objects
+                        serialized_content.append(self._block_to_dict(block))
+                serialized.append({"role": msg["role"], "content": serialized_content})
+            else:
+                serialized.append(msg)
+        return serialized
+
+    def _block_to_dict(self, block: Any) -> dict:
+        """Convert an Anthropic SDK block object to a dict."""
+        if hasattr(block, "type"):
+            if block.type == "text":
+                return {"type": "text", "text": block.text}
+            elif block.type == "tool_use":
+                return {
+                    "type": "tool_use",
+                    "id": block.id,
+                    "name": block.name,
+                    "input": block.input,
+                }
+            elif block.type == "tool_result":
+                return {
+                    "type": "tool_result",
+                    "tool_use_id": block.tool_use_id,
+                    "content": block.content,
+                }
+        # Fallback - try to convert to dict
+        if hasattr(block, "__dict__"):
+            return dict(block.__dict__)
+        return {"type": "unknown", "data": str(block)}
 
     @classmethod
     def from_json(cls, json_str: str) -> "SessionData":
@@ -179,18 +239,13 @@ class SessionData:
             session_id=data["session_id"],
             clinic_id=data["clinic_id"],
             patient_id=data.get("patient_id"),
-            state=BookingState(data["state"]),
-            previous_state=BookingState(data["previous_state"]) if data.get("previous_state") else None,
+            active_agent=data.get("active_agent"),
+            previous_agent=data.get("previous_agent"),
             collected_data=data.get("collected_data", {}),
-            current_intent=data.get("current_intent"),
-            intent_history=data.get("intent_history", []),
-            message_history=data.get("message_history", []),
+            claude_messages=data.get("claude_messages", []),
+            router_context=data.get("router_context", []),
             message_count=data.get("message_count", 0),
-            shown_slots=data.get("shown_slots", []),
-            selected_slot=data.get("selected_slot"),
             booking_id=data.get("booking_id"),
-            awaiting_confirmation=data.get("awaiting_confirmation", False),
-            last_bot_question=data.get("last_bot_question"),
             created_at=datetime.fromisoformat(data["created_at"]),
             updated_at=datetime.fromisoformat(data["updated_at"]),
         )
@@ -198,3 +253,16 @@ class SessionData:
     def to_dict(self) -> dict:
         """Convert to dictionary."""
         return json.loads(self.to_json())
+
+    def get_context_for_llm(self) -> dict:
+        """
+        Get context for LLM prompts.
+
+        Provides backward compatibility with v1 code if needed.
+        """
+        return {
+            "active_agent": self.active_agent,
+            "collected": self.collected_data,
+            "message_count": self.message_count,
+            "booking_id": self.booking_id,
+        }

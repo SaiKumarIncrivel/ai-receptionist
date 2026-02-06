@@ -1,25 +1,18 @@
-"""Session management module."""
+"""
+Session management module for v2 multi-agent architecture.
 
-from .state import (
-    BookingState,
-    can_transition,
-    get_valid_transitions,
-    is_terminal_state,
-    is_collecting_state,
-)
-from .models import SessionData, ConversationTurn
+v2 Changes:
+- Removed BookingState state machine (Claude handles flow)
+- Removed ConversationTurn (replaced by full Claude message format)
+- SessionData now stores full claude_messages with tool_use blocks
+"""
+
+from .models import SessionData
 from .manager import SessionManager, get_session_manager
 
 __all__ = [
-    # State machine
-    "BookingState",
-    "can_transition",
-    "get_valid_transitions",
-    "is_terminal_state",
-    "is_collecting_state",
     # Models
     "SessionData",
-    "ConversationTurn",
     # Manager
     "SessionManager",
     "get_session_manager",
