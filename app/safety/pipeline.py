@@ -421,11 +421,11 @@ class SafetyPipeline:
             # Step 3: PII Detection
             # ==================================
             if self._enable_pii:
-                pii_result = self.pii_detector.detect_and_redact(result.processed_text)
+                pii_result = self.pii_detector.detect(result.processed_text)
                 result.pii_detection = pii_result
                 components_run.append("pii_detector")
 
-                if pii_result.has_pii:
+                if pii_result.pii_detected:
                     result.has_pii = True
                     result.processed_text = pii_result.redacted_text
 
@@ -436,7 +436,7 @@ class SafetyPipeline:
                     if self._enable_audit:
                         self.audit_logger.log_pii_detected(
                             patient_id=context.patient_id,
-                            pii_types=[e.entity_type.value for e in pii_result.entities],
+                            pii_types=[e.entity_type.value for e in pii_result.entities_found],
                             action_taken="redacted",
                             ip_address=context.ip_address,
                             request_id=request_id,
@@ -588,17 +588,17 @@ class SafetyPipeline:
             # Step 1: Check for PII Leakage
             # ==================================
             if self._enable_pii:
-                pii_result = self.pii_detector.detect_and_redact(text)
+                pii_result = self.pii_detector.detect(text)
                 result.pii_detection = pii_result
 
-                if pii_result.has_pii:
+                if pii_result.pii_detected:
                     result.has_pii_leak = True
                     result.processed_text = pii_result.redacted_text
 
                     if self._enable_audit:
                         self.audit_logger.log_pii_detected(
                             patient_id=context.patient_id,
-                            pii_types=[e.entity_type.value for e in pii_result.entities],
+                            pii_types=[e.entity_type.value for e in pii_result.entities_found],
                             action_taken="redacted_from_output",
                             source="ai_response",
                             request_id=request_id,
