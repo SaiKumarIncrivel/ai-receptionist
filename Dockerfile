@@ -41,6 +41,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /app/wheels /wheels
 RUN pip install --no-cache /wheels/*
 
+# Download spaCy model for Presidio PII detection (must be done at build time)
+RUN python -m spacy download en_core_web_lg
+
 # Copy application code
 COPY --chown=appuser:appuser . .
 
