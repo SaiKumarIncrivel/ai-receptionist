@@ -42,7 +42,8 @@ COPY --from=builder /app/wheels /wheels
 RUN pip install --no-cache /wheels/*
 
 # Download spaCy model for Presidio PII detection (must be done at build time)
-RUN python -m spacy download en_core_web_lg
+# Using direct pip install with pinned version for reliability
+RUN pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.7.1/en_core_web_lg-3.7.1-py3-none-any.whl
 
 # Copy application code
 COPY --chown=appuser:appuser . .
