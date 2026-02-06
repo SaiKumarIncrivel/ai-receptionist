@@ -85,34 +85,35 @@ class ConversationAgent(BaseAgent):
         tenant_id: str = "",
         **kwargs,
     ) -> str:
-        """
-        Handle conversation messages with context-specific prompt.
+        """Handle conversation messages with context-specific prompt."""
+        # Merge entities from router
+        session.merge_entities(route.entities)
 
-        Injects the message type (greeting/goodbye/out_of_scope) into the prompt.
-        """
-        # Build customized system prompt based on route domain
-        message_type = route.domain  # greeting, goodbye, or out_of_scope
+        # Build messages
+        messages = session.get_claude_messages()
+        messages.append({"role": "user", "content": message})
+
+        # Build prompt with correct message_type
         collected_str = self._format_collected_data(session.collected_data)
+        system_prompt = CONVERSATION_SYSTEM_PROMPT.format(
+            message_type=route.domain,
+            collected_data=collected_str,
+        )
 
-        # Temporarily override the system prompt
-        original_get_prompt = self.get_system_prompt
-
-        def custom_get_prompt(s: SessionData) -> str:
-            return CONVERSATION_SYSTEM_PROMPT.format(
-                message_type=message_type,
-                collected_data=collected_str,
-            )
-
-        self.get_system_prompt = custom_get_prompt
+        client = self._get_client()
 
         try:
-            result = await super().handle(
-                message=message,
-                session=session,
-                route=route,
-                tenant_id=tenant_id,
+            response = await client.create_message(
+                messages=messages,
+                system=system_prompt,
+                model=self._model,
+                max_tokens=1024,
             )
-            return result
-        finally:
-            # Restore original method
-            self.get_system_prompt = original_get_prompt
+
+            final_text = self._extract_text(response)
+            session.store_turn(message, final_text, final_text)
+            return final_text
+
+        except Exception as e:
+            logger.exception(f"Conversation agent failed: {e}")
+            return self._fallback_response()

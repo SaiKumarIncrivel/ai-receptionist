@@ -32,7 +32,10 @@
       "Bash(py scripts/verify_setup.py)",
       "Bash(docker ps:*)",
       "Bash(git add:*)",
-      "Bash(xargs cat:*)"
+      "Bash(xargs cat:*)",
+      "Bash(uvicorn:*)",
+      "Bash(py -m uvicorn:*)",
+      "Bash(E2E_API_KEY=ar_test_dev CALENDAR_AGENT_URL=http://localhost:8001 py -m pytest:*)"
     ]
   }
 }

@@ -3,10 +3,19 @@ MCP Tool Bridge for Calendar Agent.
 
 Converts Calendar Agent's functionality to Anthropic tool_use format
 and executes tool calls via HTTP until proper MCP transport is available.
+
+API Endpoints (Calendar Agent v1):
+- POST /v1/slots/search - FindSlotsRequest
+- POST /v1/bookings - BookAppointmentRequest
+- GET /v1/bookings/{booking_id} - returns BookingResponse
+- DELETE /v1/bookings/{booking_id} - CancelBookingRequest in body
+- GET /v1/bookings/confirmation/{confirmation_number} - returns BookingResponse
+- GET /v1/providers - list active providers
 """
 
-import json
+import hashlib
 import logging
+from datetime import datetime, timedelta
 from typing import Any, Optional
 
 import httpx
@@ -177,6 +186,11 @@ class CalendarToolBridge:
                             "type": "string",
                             "description": "Reason for the appointment (e.g., 'checkup', 'back pain').",
                         },
+                        "duration_minutes": {
+                            "type": "integer",
+                            "default": 30,
+                            "description": "Appointment duration in minutes. Default is 30.",
+                        },
                     },
                     "required": ["slot_id", "patient_name"],
                 },
@@ -208,17 +222,21 @@ class CalendarToolBridge:
                 "description": (
                     "Get details of an existing appointment. "
                     "Use this to check booking status or verify appointment details. "
-                    "Requires the booking ID."
+                    "Can look up by booking ID (UUID) or confirmation number (6-char code)."
                 ),
                 "input_schema": {
                     "type": "object",
                     "properties": {
                         "booking_id": {
                             "type": "string",
-                            "description": "The booking ID to look up.",
+                            "description": "The booking ID (UUID) to look up.",
+                        },
+                        "confirmation_number": {
+                            "type": "string",
+                            "description": "The 6-character confirmation number to look up.",
                         },
                     },
-                    "required": ["booking_id"],
+                    # No required - either one works
                 },
             },
         ]
@@ -270,7 +288,7 @@ class CalendarToolBridge:
 
         try:
             response = await client.get(
-                "/api/providers",
+                "/v1/providers",
                 headers={"X-Tenant-ID": tenant_id},
             )
             response.raise_for_status()
@@ -295,6 +313,7 @@ class CalendarToolBridge:
                     {
                         "id": p.get("id", ""),
                         "name": p.get("name", ""),
+                        "email": p.get("email", ""),
                         "specialty": p.get("specialty", "General"),
                     }
                     for p in providers
@@ -313,67 +332,70 @@ class CalendarToolBridge:
         """Find available slots via HTTP API."""
         client = await self._get_client()
 
-        # Build request payload
+        # Calendar Agent accepts name, alias, or UUID in "provider" field
+        provider_query = input.get("provider_id") or input.get("provider_name", "")
+
+        # Map time_preference to boolean flags
+        time_pref = input.get("time_preference", "any")
+        prefer_morning = time_pref == "morning"
+        prefer_afternoon = time_pref in ("afternoon", "evening")
+
+        date_from = input.get("date_from", "")
+        date_to = input.get("date_to", date_from)
+
         payload: dict[str, Any] = {
+            "provider": provider_query,
+            "start_date": date_from,
+            "end_date": date_to,
+            "prefer_morning": prefer_morning,
+            "prefer_afternoon": prefer_afternoon,
             "duration_minutes": input.get("duration_minutes", 30),
-            "limit": input.get("limit", 5),
+            "max_results": input.get("limit", 5),
         }
-
-        # Handle provider - try ID first, then resolve name
-        if input.get("provider_id"):
-            payload["provider_id"] = input["provider_id"]
-        elif input.get("provider_name"):
-            # Try to resolve name to ID
-            provider_id = await self._resolve_provider(tenant_id, input["provider_name"])
-            if provider_id:
-                payload["provider_id"] = provider_id
-            # If not resolved, still send name - API might handle it
-
-        if input.get("date_from"):
-            payload["date_from"] = input["date_from"]
-        if input.get("date_to"):
-            payload["date_to"] = input["date_to"]
-        if input.get("time_preference"):
-            payload["time_preference"] = input["time_preference"]
 
         try:
             response = await client.post(
-                "/api/slots/find",
+                "/v1/slots/search",
                 json=payload,
                 headers={"X-Tenant-ID": tenant_id},
             )
             response.raise_for_status()
 
             data = response.json()
-            slots_raw = data.get("slots", data.get("items", data if isinstance(data, list) else []))
+
+            # Calendar Agent returns FindSlotsResponse with provider and slots
+            provider_data = data.get("provider")
+            slots_raw = data.get("slots", [])
 
             slots = [
                 {
-                    "slot_id": s.get("slot_id", s.get("id", "")),
-                    "provider_id": s.get("provider_id", ""),
-                    "provider_name": s.get("provider_name", ""),
-                    "start_time": s.get("start_time", s.get("start", "")),
-                    "end_time": s.get("end_time", s.get("end", "")),
+                    "slot_id": s.get("slot_id", ""),
+                    "provider_id": provider_data.get("id", "") if provider_data else "",
+                    "provider_name": provider_data.get("name", "") if provider_data else "",
+                    "start_time": s.get("start", ""),
+                    "end_time": s.get("end", ""),
+                    "display_time": s.get("display_time", ""),
                     "duration_minutes": s.get("duration_minutes", 30),
+                    "score": s.get("score", 0),
                 }
                 for s in slots_raw
             ]
 
             if not slots:
-                return {
+                result: dict[str, Any] = {
                     "slots": [],
                     "count": 0,
-                    "message": "No available slots found for the specified criteria.",
-                    "suggestions": [
-                        "Try a different date",
-                        "Try a different provider",
-                        "Try a different time preference",
-                    ],
+                    "message": data.get("message") or "No available slots found.",
                 }
+                # Include next_available_after if Calendar Agent provides it
+                if data.get("next_available_after"):
+                    result["next_available_after"] = data["next_available_after"]
+                return result
 
             return {
                 "slots": slots,
                 "count": len(slots),
+                "provider": provider_data,
             }
 
         except httpx.HTTPError as e:
@@ -387,7 +409,6 @@ class CalendarToolBridge:
         """Create booking via HTTP API."""
         client = await self._get_client()
 
-        # Validate required fields
         if not input.get("slot_id"):
             return {
                 "error": "missing_slot_id",
@@ -399,49 +420,103 @@ class CalendarToolBridge:
                 "message": "patient_name is required to book an appointment",
             }
 
+        # Parse slot_id format: "{provider_uuid}:{start_time_iso}"
+        # Example: "123e4567-e89b-12d3-a456-426614174000:2025-02-07T14:15:00"
+        slot_id = input["slot_id"]
+        provider_id = ""
+        start_time_str = ""
+
+        try:
+            # Find the boundary between UUID and datetime
+            # UUID format: 8-4-4-4-12 chars = 36 chars total with hyphens
+            # Look for the pattern where date starts (YYYY-MM-DD)
+            if "T" in slot_id:
+                # Find where the ISO date starts (look for :YYYY- pattern)
+                import re
+                match = re.search(r":(\d{4}-\d{2}-\d{2}T)", slot_id)
+                if match:
+                    split_pos = match.start()
+                    provider_id = slot_id[:split_pos]
+                    start_time_str = slot_id[split_pos + 1:]
+                else:
+                    # Fallback: assume first 36 chars are UUID
+                    provider_id = slot_id[:36]
+                    start_time_str = slot_id[37:] if len(slot_id) > 37 else ""
+            else:
+                # No T found, might be a different format
+                provider_id = input.get("provider_id", slot_id)
+                start_time_str = input.get("start_time", "")
+        except Exception:
+            # Fallback: provider_id might be passed separately
+            provider_id = input.get("provider_id", slot_id)
+            start_time_str = input.get("start_time", "")
+
+        # Calculate end_time from duration
+        duration = input.get("duration_minutes", 30)
+        end_time_str = ""
+
+        try:
+            start_dt = datetime.fromisoformat(start_time_str)
+            end_dt = start_dt + timedelta(minutes=duration)
+            end_time_str = end_dt.isoformat()
+        except Exception:
+            end_time_str = start_time_str  # Fallback, will likely error
+
+        # Generate idempotency key from slot + patient
+        idem_source = f"{slot_id}:{input['patient_name']}:{tenant_id}"
+        idempotency_key = hashlib.sha256(idem_source.encode()).hexdigest()[:16]
+
         payload: dict[str, Any] = {
-            "slot_id": input["slot_id"],
-            "patient": {
-                "name": input["patient_name"],
-            },
+            "provider_id": provider_id,
+            "start_time": start_time_str,
+            "end_time": end_time_str,
+            "patient_name": input["patient_name"],
+            "idempotency_key": idempotency_key,
+            "timezone": "America/New_York",
         }
 
         if input.get("patient_phone"):
-            payload["patient"]["phone"] = input["patient_phone"]
+            payload["patient_phone"] = input["patient_phone"]
         if input.get("patient_email"):
-            payload["patient"]["email"] = input["patient_email"]
+            payload["patient_email"] = input["patient_email"]
         if input.get("reason"):
             payload["reason"] = input["reason"]
 
         try:
             response = await client.post(
-                "/api/bookings",
+                "/v1/bookings",
                 json=payload,
                 headers={"X-Tenant-ID": tenant_id},
             )
 
             data = response.json()
 
-            if response.status_code in (200, 201):
+            if response.status_code in (200, 201) and data.get("success", True):
+                booking = data.get("booking", data)
                 return {
                     "success": True,
-                    "booking_id": data.get("booking_id", data.get("id")),
+                    "booking_id": booking.get("id", data.get("id")),
+                    "confirmation_number": booking.get("confirmation_number", ""),
                     "message": data.get("message", "Appointment booked successfully"),
                     "confirmation": {
-                        "provider_name": data.get("provider_name"),
-                        "start_time": data.get("start_time"),
+                        "provider_name": booking.get("provider_name", ""),
+                        "start_time": booking.get("start_time", start_time_str),
                         "patient_name": input["patient_name"],
+                        "confirmation_number": booking.get("confirmation_number", ""),
                     },
                 }
             else:
                 return {
                     "success": False,
                     "error": data.get("error_code", "booking_failed"),
-                    "message": data.get("message", data.get("error", "Booking failed")),
-                    "suggestions": data.get("suggestions", [
-                        "The slot may no longer be available",
-                        "Try searching for new slots",
-                    ]),
+                    "message": data.get("error", data.get("message", "Booking failed")),
+                    "alternatives": [
+                        {
+                            "start_time": s.get("start", s.get("start_time", "")),
+                            "end_time": s.get("end", s.get("end_time", "")),
+                        }
+                        for s in data.get("alternatives", [])
+                    ],
                 }
 
         except httpx.HTTPError as e:
@@ -464,13 +539,14 @@ class CalendarToolBridge:
             }
 
         try:
-            params = {}
+            # Calendar Agent expects reason in request body, not params
+            body = None
             if input.get("reason"):
-                params["reason"] = input["reason"]
+                body = {"reason": input["reason"]}
 
             response = await client.delete(
-                f"/api/bookings/{booking_id}",
-                params=params,
+                f"/v1/bookings/{booking_id}",
+                json=body,
                 headers={"X-Tenant-ID": tenant_id},
             )
 
@@ -501,15 +577,22 @@ class CalendarToolBridge:
         client = await self._get_client()
 
         booking_id = input.get("booking_id")
-        if not booking_id:
+        confirmation_number = input.get("confirmation_number")
+
+        if not booking_id and not confirmation_number:
             return {
-                "error": "missing_booking_id",
-                "message": "booking_id is required",
+                "error": "missing_identifier",
+                "message": "booking_id or confirmation_number is required",
             }
 
         try:
+            if booking_id:
+                url = f"/v1/bookings/{booking_id}"
+            else:
+                url = f"/v1/bookings/confirmation/{confirmation_number}"
+
             response = await client.get(
-                f"/api/bookings/{booking_id}",
+                url,
                 headers={"X-Tenant-ID": tenant_id},
             )
 
@@ -520,9 +603,10 @@ class CalendarToolBridge:
                     "booking": data,
                 }
             elif response.status_code == 404:
+                identifier = booking_id or confirmation_number
                 return {
                     "found": False,
-                    "message": f"No booking found with ID: {booking_id}",
+                    "message": f"No booking found with: {identifier}",
                 }
             else:
                 return {
@@ -536,21 +620,6 @@ class CalendarToolBridge:
                 "error": "connection_error",
                 "message": "Unable to connect to scheduling system",
             }
-
-    async def _resolve_provider(self, tenant_id: str, name: str) -> Optional[str]:
-        """Try to resolve a provider name to ID."""
-        try:
-            result = await self._list_providers(tenant_id, {})
-            providers = result.get("providers", [])
-
-            name_lower = name.lower()
-            for provider in providers:
-                if name_lower in provider.get("name", "").lower():
-                    return provider.get("id")
-
-            return None
-        except Exception:
-            return None
 
 
 # Singleton

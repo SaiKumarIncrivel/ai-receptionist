@@ -470,8 +470,26 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if request.url.path in self.SKIP_AUTH_PATHS:
             return await call_next(request)
 
-        # Get API key from header
+        # Development bypass: allow ar_test_dev key in development mode
         api_key = request.headers.get("X-API-Key")
+        if settings.is_development and api_key == "ar_test_dev":
+            # Create a mock clinic context for development
+            from uuid import UUID
+            dev_context = ClinicContext(
+                id=UUID("00000000-0000-0000-0000-000000000001"),
+                name="Development Clinic",
+                slug="dev-clinic",
+                timezone="America/New_York",
+                status="active",
+                rate_limit_tier="enterprise",
+                rate_limit_rpm=1000,
+            )
+            set_clinic_context(dev_context)
+            request.state.clinic = dev_context
+            logger.debug("Dev auth bypass enabled")
+            return await call_next(request)
+
+        # Get API key from header
 
         if not api_key:
             return JSONResponse(

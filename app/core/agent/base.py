@@ -168,9 +168,10 @@ class BaseAgent(ABC):
             tenant_id: For tool execution
 
         Returns:
-            (final_text_response, full_message_chain)
+            (final_text_response, new_messages_only)
         """
-        all_messages = list(messages)
+        all_messages = list(messages)  # Full context for Claude API calls
+        new_messages = []  # Only NEW messages to store in session
         client = self._get_client()
         max_iterations = 10  # Prevent infinite loops
 
@@ -212,9 +213,14 @@ class BaseAgent(ABC):
             # Serialize assistant response content blocks
             assistant_content = self._serialize_content_blocks(response.content)
 
-            # Append to message chain
-            all_messages.append({"role": "assistant", "content": assistant_content})
-            all_messages.append({"role": "user", "content": tool_results})
+            # Append to message chains
+            assistant_msg = {"role": "assistant", "content": assistant_content}
+            tool_result_msg = {"role": "user", "content": tool_results}
+
+            all_messages.append(assistant_msg)
+            all_messages.append(tool_result_msg)
+            new_messages.append(assistant_msg)
+            new_messages.append(tool_result_msg)
 
             # Call Claude again with updated messages
             response = await client.create_message(
@@ -229,9 +235,10 @@ class BaseAgent(ABC):
         final_text = self._extract_text(response)
 
         # Add final assistant message to chain
-        all_messages.append({"role": "assistant", "content": final_text})
+        final_msg = {"role": "assistant", "content": final_text}
+        new_messages.append(final_msg)
 
-        return final_text, all_messages
+        return final_text, new_messages
 
     def _serialize_content_blocks(self, content: list) -> list[dict]:
         """

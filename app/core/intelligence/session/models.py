@@ -75,7 +75,7 @@ class SessionData:
             user_message: The user's message
             assistant_content: Full assistant response. Can be:
                 - str: Simple text response
-                - list[dict]: Full message chain including tool calls
+                - list[dict]: New messages from tool loop (no history, no duplicates)
             text_response: The final text response shown to user
         """
         # Add user message to full history
@@ -83,11 +83,8 @@ class SessionData:
 
         # Add assistant response(s) to full history
         if isinstance(assistant_content, list):
-            # Full message chain with tool calls
-            # assistant_content is already in the right format from _run_tool_loop
-            for msg in assistant_content:
-                if msg not in self.claude_messages:  # Avoid duplicates
-                    self.claude_messages.append(msg)
+            # New messages from tool loop (no history, no duplicates)
+            self.claude_messages.extend(assistant_content)
         else:
             # Simple text response
             self.claude_messages.append({"role": "assistant", "content": text_response})
