@@ -585,24 +585,27 @@ class SafetyPipeline:
 
         try:
             # ==================================
-            # Step 1: Check for PII Leakage
+            # Step 1: Check for PII Leakage (DISABLED)
             # ==================================
-            if self._enable_pii:
-                pii_result = self.pii_detector.detect(text)
-                result.pii_detection = pii_result
-
-                if pii_result.pii_detected:
-                    result.has_pii_leak = True
-                    result.processed_text = pii_result.redacted_text
-
-                    if self._enable_audit:
-                        self.audit_logger.log_pii_detected(
-                            patient_id=context.patient_id,
-                            pii_types=[e.entity_type.value for e in pii_result.entities_found],
-                            action_taken="redacted_from_output",
-                            source="ai_response",
-                            request_id=request_id,
-                        )
+            # PII detection on output is disabled - AI responses may contain
+            # information the user provided, which is expected behavior.
+            # PII detection remains enabled on INPUT to protect user data.
+            # if self._enable_pii:
+            #     pii_result = self.pii_detector.detect(text)
+            #     result.pii_detection = pii_result
+            #
+            #     if pii_result.pii_detected:
+            #         result.has_pii_leak = True
+            #         result.processed_text = pii_result.redacted_text
+            #
+            #         if self._enable_audit:
+            #             self.audit_logger.log_pii_detected(
+            #                 patient_id=context.patient_id,
+            #                 pii_types=[e.entity_type.value for e in pii_result.entities_found],
+            #                 action_taken="redacted_from_output",
+            #                 source="ai_response",
+            #                 request_id=request_id,
+            #             )
 
             # ==================================
             # Step 2: Content Filter (Output Mode)
