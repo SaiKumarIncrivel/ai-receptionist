@@ -340,20 +340,36 @@ class AuditLogger:
         pii_types: Optional[list[str]] = None,
         action_taken: str = "redacted",
         source: str = "user_input",
+        details: Optional[dict] = None,
         **kwargs
     ) -> AuditEvent:
-        """Log PII detection event."""
+        """
+        Log PII detection event.
+
+        Args:
+            patient_id: Patient identifier
+            pii_types: List of PII types detected (type names only, NOT values)
+            action_taken: Action taken on the PII (e.g., "sensitive_redacted", "detected_only")
+            source: Source of the PII (e.g., "user_input", "ai_response")
+            details: Additional details to merge (e.g., operational vs sensitive breakdown)
+        """
+        # Build base details
+        event_details = {
+            "pii_types": pii_types or [],
+            "action_taken": action_taken,
+            "source": source,
+        }
+        # Merge any additional details
+        if details:
+            event_details.update(details)
+
         return self.log(
             event_type=AuditEventType.PII_DETECTED,
             severity=AuditSeverity.INFO,
             action=f"PII detected and {action_taken}",
             resource=source,
             patient_id=patient_id,
-            details={
-                "pii_types": pii_types or [],
-                "action_taken": action_taken,
-                "source": source,
-            },
+            details=event_details,
             **kwargs
         )
 

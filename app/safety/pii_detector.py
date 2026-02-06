@@ -52,6 +52,42 @@ def get_pii_type(presidio_type: str) -> PIIType:
 
 
 # ==================================
+# PII Categories for Healthcare Receptionist
+# ==================================
+
+# OPERATIONAL_PII: Detect but DO NOT redact - needed for booking appointments
+# These are essential for the receptionist to function (names, contact info, DOB)
+OPERATIONAL_PII: set[PIIType] = {
+    PIIType.PERSON,         # Patient name - needed to address them and book
+    PIIType.PHONE,          # Phone number - needed for contact/confirmation
+    PIIType.EMAIL,          # Email - needed for confirmation/reminders
+    PIIType.DATE_OF_BIRTH,  # DOB - needed for patient identification
+}
+
+# SENSITIVE_PII: Detect AND redact - should never appear in scheduling conversations
+# These are highly sensitive and have no place in appointment booking
+SENSITIVE_PII: set[PIIType] = {
+    PIIType.SSN,            # Social Security Number
+    PIIType.CREDIT_CARD,    # Credit card numbers
+    PIIType.MEDICAL_RECORD, # Medical record numbers (handled separately by clinic)
+    PIIType.INSURANCE_ID,   # Insurance IDs (may be needed later, but redact by default)
+    PIIType.IP_ADDRESS,     # IP addresses
+    PIIType.ADDRESS,        # Physical addresses (redact in chat, handle separately)
+    PIIType.UNKNOWN,        # Unknown types - err on the side of caution
+}
+
+
+def is_operational_pii(pii_type: PIIType) -> bool:
+    """Check if PII type is operational (needed for booking, should not be redacted)."""
+    return pii_type in OPERATIONAL_PII
+
+
+def is_sensitive_pii(pii_type: PIIType) -> bool:
+    """Check if PII type is sensitive (should always be redacted)."""
+    return pii_type in SENSITIVE_PII
+
+
+# ==================================
 # Custom Healthcare Recognizers
 # ==================================
 
@@ -241,15 +277,28 @@ class PIIDetector:
             logger.error(f"Failed to initialize PII Detector: {e}")
             return False
 
-    def detect(self, text: str) -> PIIDetectionResult:
+    def detect(
+        self,
+        text: str,
+        redact_operational: bool = False,
+    ) -> PIIDetectionResult:
         """
-        Detect PII in text.
+        Detect PII in text with category-aware redaction.
+
+        For healthcare receptionist use cases:
+        - OPERATIONAL_PII (name, phone, email, DOB) is detected but NOT redacted
+          by default, as it's needed for booking appointments
+        - SENSITIVE_PII (SSN, credit card, etc.) is ALWAYS redacted
 
         Args:
             text: Text to analyze
+            redact_operational: If True, also redact operational PII (default: False)
 
         Returns:
-            PIIDetectionResult with detected entities and redacted text
+            PIIDetectionResult with:
+            - entities_found: ALL detected entities (both operational and sensitive)
+            - redacted_text: Text with only SENSITIVE_PII redacted (unless redact_operational=True)
+            - pii_detected: True if ANY PII was found
         """
         start_time = time.time()
 
@@ -281,21 +330,48 @@ class PIIDetector:
                 score_threshold=self.confidence_threshold,
             )
 
-            # Convert to our PIIEntity format
+            # Convert to our PIIEntity format (ALL entities)
             entities = self._convert_results(text, analyzer_results)
 
-            # Redact if PII found
-            if entities:
-                redacted_text = self._redact(text, analyzer_results)
+            # Separate entities by category
+            operational_entities = [e for e in entities if is_operational_pii(e.entity_type)]
+            sensitive_entities = [e for e in entities if is_sensitive_pii(e.entity_type)]
+
+            # Only redact sensitive PII (unless redact_operational is True)
+            if redact_operational:
+                # Redact everything
+                results_to_redact = analyzer_results
+            else:
+                # Only redact sensitive PII
+                results_to_redact = [
+                    r for r in analyzer_results
+                    if is_sensitive_pii(get_pii_type(r.entity_type))
+                ]
+
+            if results_to_redact:
+                redacted_text = self._redact(text, results_to_redact)
             else:
                 redacted_text = text
 
             detection_time = (time.time() - start_time) * 1000
 
+            # Log operational PII detection (useful for debugging)
+            if operational_entities:
+                logger.debug(
+                    f"Operational PII detected (not redacted): "
+                    f"{[e.entity_type.value for e in operational_entities]}"
+                )
+
+            if sensitive_entities:
+                logger.info(
+                    f"Sensitive PII detected and redacted: "
+                    f"{[e.entity_type.value for e in sensitive_entities]}"
+                )
+
             return PIIDetectionResult(
                 original_text=text,
                 redacted_text=redacted_text,
-                entities_found=entities,
+                entities_found=entities,  # Return ALL entities for audit
                 pii_detected=len(entities) > 0,
                 detection_time_ms=detection_time,
             )

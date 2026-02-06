@@ -15,7 +15,12 @@ from typing import Any, Optional
 from uuid import uuid4
 
 from app.safety.sanitizer import Sanitizer, SanitizationResult
-from app.safety.pii_detector import PIIDetector, PIIDetectionResult
+from app.safety.pii_detector import (
+    PIIDetector,
+    PIIDetectionResult,
+    is_operational_pii,
+    is_sensitive_pii,
+)
 from app.safety.crisis_detector import (
     CrisisDetector,
     CrisisDetectionResult,
@@ -418,8 +423,10 @@ class SafetyPipeline:
                     return result
 
             # ==================================
-            # Step 3: PII Detection
+            # Step 3: PII Detection (Category-Aware)
             # ==================================
+            # OPERATIONAL_PII (name, phone, email, DOB): detected but NOT redacted
+            # SENSITIVE_PII (SSN, credit card, etc.): detected AND redacted
             if self._enable_pii:
                 pii_result = self.pii_detector.detect(result.processed_text)
                 result.pii_detection = pii_result
@@ -429,17 +436,34 @@ class SafetyPipeline:
                     result.has_pii = True
                     result.processed_text = pii_result.redacted_text
 
-                    # Update action but allow proceeding with redacted text
-                    if result.action == PipelineAction.PROCEED:
+                    # Categorize detected entities
+                    operational_types = [
+                        e.entity_type.value for e in pii_result.entities_found
+                        if is_operational_pii(e.entity_type)
+                    ]
+                    sensitive_types = [
+                        e.entity_type.value for e in pii_result.entities_found
+                        if is_sensitive_pii(e.entity_type)
+                    ]
+
+                    # Only mark as redacted if sensitive PII was actually redacted
+                    if sensitive_types and result.action == PipelineAction.PROCEED:
                         result.action = PipelineAction.PROCEED_WITH_REDACTION
 
                     if self._enable_audit:
+                        # Log ALL detected PII types for audit (not values!)
                         self.audit_logger.log_pii_detected(
                             patient_id=context.patient_id,
                             pii_types=[e.entity_type.value for e in pii_result.entities_found],
-                            action_taken="redacted",
+                            action_taken="sensitive_redacted" if sensitive_types else "detected_only",
                             ip_address=context.ip_address,
                             request_id=request_id,
+                            details={
+                                "operational_pii_types": operational_types,
+                                "sensitive_pii_types": sensitive_types,
+                                "redacted_count": len(sensitive_types),
+                                "passed_through_count": len(operational_types),
+                            },
                         )
 
             # ==================================
